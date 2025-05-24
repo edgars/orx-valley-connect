@@ -88,7 +88,7 @@ export const useCreateBlogPost = () => {
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (postData: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id'> & { tags?: string[] }) => {
+    mutationFn: async (postData: Omit<BlogPost, 'id' | 'created_at' | 'updated_at' | 'author_id'> & { tags?: { id: string; name: string; color: string; }[] }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
@@ -106,11 +106,11 @@ export const useCreateBlogPost = () => {
 
       if (error) throw error;
 
-      // Fix: Use only tag IDs (strings) instead of full tag objects
+      // Fix: Extract only the ID from tag objects for database insertion
       if (tags && tags.length > 0) {
-        const tagInserts = tags.map(tagId => ({
+        const tagInserts = tags.map(tag => ({
           post_id: data.id,
-          tag_id: tagId
+          tag_id: tag.id // Extract the ID from the tag object
         }));
 
         const { error: tagsError } = await supabase
