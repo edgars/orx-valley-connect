@@ -21,8 +21,13 @@ export const useUserEventRegistrations = () => {
             date_time,
             location,
             type,
+            max_participants,
+            current_participants,
+            status,
+            organizer_id,
             image_url,
-            status
+            created_at,
+            updated_at
           )
         `)
         .eq('user_id', user.id)
