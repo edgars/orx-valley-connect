@@ -52,12 +52,20 @@ const Header = () => {
             Sobre
           </a>
           {isAdmin && (
-            <button
-              onClick={() => navigate('/admin')}
-              className="text-muted-foreground hover:text-foreground transition-colors"
-            >
-              Admin
-            </button>
+            <>
+              <button
+                onClick={() => navigate('/admin')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Admin
+              </button>
+              <button
+                onClick={() => navigate('/eventos/gerenciar')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Gestão de Eventos
+              </button>
+            </>
           )}
         </nav>
 
@@ -80,9 +88,14 @@ const Header = () => {
                   Perfil
                 </DropdownMenuItem>
                 {isAdmin && (
-                  <DropdownMenuItem onClick={() => navigate('/admin')}>
-                    Administração
-                  </DropdownMenuItem>
+                  <>
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      Administração
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate('/eventos/gerenciar')}>
+                      Gestão de Eventos
+                    </DropdownMenuItem>
+                  </>
                 )}
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sair
