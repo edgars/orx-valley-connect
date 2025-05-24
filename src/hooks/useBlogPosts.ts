@@ -106,16 +106,16 @@ export const useCreateBlogPost = () => {
 
       if (error) throw error;
 
-      // Corrigindo a inserção de tags - passando apenas os IDs das tags
+      // Corrigindo a inserção de tags - usando apenas IDs das tags como strings
       if (tags && tags.length > 0) {
+        const tagInserts = tags.map(tagId => ({
+          post_id: data.id,
+          tag_id: tagId
+        }));
+
         const { error: tagsError } = await supabase
           .from('blog_post_tags')
-          .insert(
-            tags.map(tagId => ({
-              post_id: data.id,
-              tag_id: tagId // Agora passando apenas o ID da tag como string
-            }))
-          );
+          .insert(tagInserts);
 
         if (tagsError) throw tagsError;
       }

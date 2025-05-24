@@ -2,8 +2,7 @@
 import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import EventsSection from '@/components/EventsSection';
-import CommunitySection from '@/components/CommunitySection';
-import SponsorsSection from '@/components/SponsorsSection';
+import SponsorsCarousel from '@/components/SponsorsCarousel';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -13,8 +12,7 @@ const Index = () => {
       <main>
         <HeroSection />
         <EventsSection />
-        <CommunitySection />
-        <SponsorsSection />
+        <SponsorsCarousel />
       </main>
       <Footer />
     </div>

@@ -23,43 +23,46 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white shadow-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             {isAdminRoute ? (
-              <button onClick={handleLogoClick} className="text-2xl font-bold text-blue-600 hover:text-blue-800">
-                DevCommunity
+              <button onClick={handleLogoClick} className="text-2xl font-bold text-gradient hover:opacity-80">
+                ORX Valley
               </button>
             ) : (
-              <Link to="/" className="text-2xl font-bold text-blue-600">
-                DevCommunity
+              <Link to="/" className="text-2xl font-bold text-gradient">
+                ORX Valley
               </Link>
             )}
           </div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-blue-600">
+          <nav className="hidden md:flex items-center space-x-8">
+            <a href="#inicio" className="text-gray-700 hover:text-primary transition-colors">
               Início
-            </Link>
-            <Link to="/blog" className="text-gray-700 hover:text-blue-600">
+            </a>
+            <a href="#eventos" className="text-gray-700 hover:text-primary transition-colors">
+              Eventos
+            </a>
+            <Link to="/blog" className="text-gray-700 hover:text-primary transition-colors">
               Blog
             </Link>
             {user && (
               <>
-                <Link to="/membros" className="text-gray-700 hover:text-blue-600">
+                <Link to="/membros" className="text-gray-700 hover:text-primary transition-colors">
                   Membros
                 </Link>
-                <Link to="/meus-eventos" className="text-gray-700 hover:text-blue-600">
+                <Link to="/meus-eventos" className="text-gray-700 hover:text-primary transition-colors">
                   Meus Eventos
                 </Link>
                 {isAdmin && (
                   <>
-                    <Link to="/admin" className="text-gray-700 hover:text-blue-600">
+                    <Link to="/admin" className="text-gray-700 hover:text-primary transition-colors">
                       Admin
                     </Link>
-                    <Link to="/blog/gerenciar" className="text-gray-700 hover:text-blue-600">
+                    <Link to="/blog/gerenciar" className="text-gray-700 hover:text-primary transition-colors">
                       Gerenciar Blog
                     </Link>
                   </>
@@ -85,7 +88,9 @@ const Header = () => {
               </div>
             ) : (
               <Link to="/auth">
-                <Button>Entrar</Button>
+                <Button className="bg-orx-gradient hover:opacity-90 text-white">
+                  Entrar
+                </Button>
               </Link>
             )}
           </div>
@@ -104,18 +109,25 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t">
+          <div className="md:hidden py-4 border-t bg-white/95 backdrop-blur-sm">
             <nav className="flex flex-col space-y-4">
-              <Link 
-                to="/" 
-                className="text-gray-700 hover:text-blue-600"
+              <a 
+                href="#inicio" 
+                className="text-gray-700 hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Início
-              </Link>
+              </a>
+              <a 
+                href="#eventos" 
+                className="text-gray-700 hover:text-primary transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Eventos
+              </a>
               <Link 
                 to="/blog" 
-                className="text-gray-700 hover:text-blue-600"
+                className="text-gray-700 hover:text-primary transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Blog
@@ -124,14 +136,14 @@ const Header = () => {
                 <>
                   <Link 
                     to="/membros" 
-                    className="text-gray-700 hover:text-blue-600"
+                    className="text-gray-700 hover:text-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Membros
                   </Link>
                   <Link 
                     to="/meus-eventos" 
-                    className="text-gray-700 hover:text-blue-600"
+                    className="text-gray-700 hover:text-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Meus Eventos
@@ -140,14 +152,14 @@ const Header = () => {
                     <>
                       <Link 
                         to="/admin" 
-                        className="text-gray-700 hover:text-blue-600"
+                        className="text-gray-700 hover:text-primary transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Admin
                       </Link>
                       <Link 
                         to="/blog/gerenciar" 
-                        className="text-gray-700 hover:text-blue-600"
+                        className="text-gray-700 hover:text-primary transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Gerenciar Blog
@@ -156,7 +168,7 @@ const Header = () => {
                   )}
                   <Link 
                     to="/perfil" 
-                    className="text-gray-700 hover:text-blue-600"
+                    className="text-gray-700 hover:text-primary transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Perfil
@@ -166,7 +178,7 @@ const Header = () => {
                       signOut();
                       setIsMenuOpen(false);
                     }}
-                    className="text-gray-700 hover:text-blue-600 text-left"
+                    className="text-gray-700 hover:text-primary transition-colors text-left"
                   >
                     Sair
                   </button>
@@ -175,7 +187,7 @@ const Header = () => {
               {!user && (
                 <Link 
                   to="/auth" 
-                  className="text-gray-700 hover:text-blue-600"
+                  className="text-gray-700 hover:text-primary transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Entrar
