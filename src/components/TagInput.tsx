@@ -2,7 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { useBlogTags, useCreateBlogTag } from '@/hooks/useBlogTags';
 import { Plus, X } from 'lucide-react';
 
@@ -15,6 +14,7 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
   const [inputValue, setInputValue] = useState('');
   const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; color: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
   const { data: allTags } = useBlogTags();
   const { mutate: createTag } = useCreateBlogTag();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -29,9 +29,11 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
         .slice(0, 5);
       setSuggestions(filtered);
       setShowSuggestions(true);
+      setHighlightedIndex(-1);
     } else {
       setSuggestions([]);
       setShowSuggestions(false);
+      setHighlightedIndex(-1);
     }
   }, [inputValue, allTags, selectedTags]);
 
@@ -41,6 +43,8 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
     }
     setInputValue('');
     setShowSuggestions(false);
+    setHighlightedIndex(-1);
+    inputRef.current?.focus();
   };
 
   const removeTag = (tagId: string) => {
@@ -75,76 +79,125 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (suggestions.length > 0) {
+      if (suggestions.length > 0 && highlightedIndex >= 0) {
+        addTag(suggestions[highlightedIndex]);
+      } else if (suggestions.length > 0) {
         addTag(suggestions[0]);
       } else if (inputValue.trim()) {
         createNewTag();
       }
+    } else if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        setHighlightedIndex(prev => 
+          prev < suggestions.length - 1 ? prev + 1 : 0
+        );
+      }
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (suggestions.length > 0) {
+        setHighlightedIndex(prev => 
+          prev > 0 ? prev - 1 : suggestions.length - 1
+        );
+      }
+    } else if (e.key === 'Escape') {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
     }
   };
 
+  const handleBlur = () => {
+    // Delay hiding suggestions to allow for click events
+    setTimeout(() => {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+    }, 200);
+  };
+
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <div className="relative">
         <Input
           ref={inputRef}
           type="text"
-          placeholder="Digite uma tag..."
+          placeholder="Digite uma tag e pressione Enter..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyDown={handleKeyDown}
-          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400"
+          onBlur={handleBlur}
+          onFocus={() => {
+            if (inputValue.trim() && suggestions.length > 0) {
+              setShowSuggestions(true);
+            }
+          }}
+          className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
         />
         
         {showSuggestions && suggestions.length > 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-40 overflow-y-auto">
-            {suggestions.map((tag) => (
+          <div className="absolute z-20 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-40 overflow-y-auto animate-fade-in">
+            {suggestions.map((tag, index) => (
               <button
                 key={tag.id}
                 onClick={() => addTag(tag)}
-                className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-2"
+                className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${
+                  index === highlightedIndex 
+                    ? 'bg-gray-700' 
+                    : 'hover:bg-gray-700'
+                }`}
               >
                 <div
-                  className="w-3 h-3 rounded-full"
+                  className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: tag.color }}
                 />
-                <span className="text-white">{tag.name}</span>
+                <span className="text-white truncate">{tag.name}</span>
               </button>
             ))}
           </div>
         )}
         
-        {inputValue.trim() && suggestions.length === 0 && (
-          <div className="absolute z-10 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg">
+        {inputValue.trim() && suggestions.length === 0 && showSuggestions && (
+          <div className="absolute z-20 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg animate-fade-in">
             <button
               onClick={createNewTag}
-              className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-2 text-white"
+              className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-2 text-white transition-colors"
             >
-              <Plus className="w-4 h-4" />
-              Criar tag "{inputValue.trim()}"
+              <Plus className="w-4 h-4 text-green-400" />
+              <span>Criar tag "{inputValue.trim()}"</span>
             </button>
           </div>
         )}
       </div>
 
       {selectedTags.length > 0 && (
-        <div className="flex flex-wrap gap-2">
-          {selectedTags.map((tag) => (
-            <Badge
-              key={tag.id}
-              style={{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color }}
-              className="border flex items-center gap-1"
-            >
-              {tag.name}
-              <button
-                type="button"
-                onClick={() => removeTag(tag.id)}
-                className="ml-1 hover:text-red-400"
+        <div className="space-y-2">
+          <p className="text-sm text-gray-400">Tags selecionadas:</p>
+          <div className="flex flex-wrap gap-2">
+            {selectedTags.map((tag, index) => (
+              <Badge
+                key={tag.id}
+                style={{ 
+                  backgroundColor: tag.color + '20', 
+                  color: tag.color, 
+                  borderColor: tag.color,
+                  animationDelay: `${index * 50}ms`
+                }}
+                className="border flex items-center gap-2 px-3 py-1 animate-scale-in hover:scale-105 transition-transform duration-200"
               >
-                <X className="w-3 h-3" />
-              </button>
-            </Badge>
-          ))}
+                <div
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: tag.color }}
+                />
+                <span className="font-medium">{tag.name}</span>
+                <button
+                  type="button"
+                  onClick={() => removeTag(tag.id)}
+                  className="ml-1 hover:text-red-400 transition-colors p-0.5 rounded-full hover:bg-red-500/20"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </Badge>
+            ))}
+          </div>
         </div>
       )}
     </div>

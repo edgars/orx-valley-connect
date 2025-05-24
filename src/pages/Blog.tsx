@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -14,7 +13,7 @@ import { useBlogTags } from '@/hooks/useBlogTags';
 import { useMembers } from '@/hooks/useMembers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Search, Calendar, Clock, ArrowRight, Filter, X } from 'lucide-react';
+import { Search, Calendar, Clock, ArrowRight, Filter, X, Tag } from 'lucide-react';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -196,22 +195,36 @@ const Blog = () => {
                       <img
                         src={featuredPost.featured_image_url}
                         alt={featuredPost.title}
-                        className="w-full h-64 md:h-full object-cover"
+                        className="w-full h-64 md:h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
                   <div className={`${featuredPost.featured_image_url ? 'md:w-1/2' : 'w-full'} p-8`}>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {featuredPost.tags?.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          style={{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color }}
-                          className="border"
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
+                    {/* Tags in Featured Post */}
+                    {featuredPost.tags && featuredPost.tags.length > 0 && (
+                      <div className="mb-4">
+                        <div className="flex flex-wrap gap-2">
+                          {featuredPost.tags.map((tag, index) => (
+                            <Badge
+                              key={tag.id}
+                              style={{ 
+                                backgroundColor: tag.color + '20', 
+                                color: tag.color, 
+                                borderColor: tag.color,
+                                animationDelay: `${index * 100}ms`
+                              }}
+                              className="border hover:scale-110 transition-all duration-300 animate-fade-in"
+                            >
+                              <div
+                                className="w-2 h-2 rounded-full mr-1 animate-pulse"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              {tag.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     
                     <h3 className="text-3xl font-bold mb-4 text-white">
                       <Link
@@ -254,7 +267,7 @@ const Blog = () => {
                       
                       <Link
                         to={`/blog/${featuredPost.slug}`}
-                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium"
+                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors"
                       >
                         Ler mais
                         <ArrowRight className="w-4 h-4" />
@@ -273,30 +286,47 @@ const Blog = () => {
             </h2>
             
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {(hasActiveFilters ? filteredPosts : recentPosts).map((post) => (
-                <Card key={post.id} className="overflow-hidden hover:shadow-xl transition-shadow bg-gray-800 border-gray-700 group">
+              {(hasActiveFilters ? filteredPosts : recentPosts).map((post, cardIndex) => (
+                <Card key={post.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 bg-gray-800 border-gray-700 group hover:scale-105 animate-fade-in" style={{ animationDelay: `${cardIndex * 100}ms` }}>
                   {post.featured_image_url && (
                     <div className="aspect-video overflow-hidden">
                       <img
                         src={post.featured_image_url}
                         alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
                   
                   <CardHeader className="pb-3">
-                    <div className="flex flex-wrap gap-2 mb-3">
-                      {post.tags?.map((tag) => (
-                        <Badge
-                          key={tag.id}
-                          style={{ backgroundColor: tag.color + '20', color: tag.color, borderColor: tag.color }}
-                          className="text-xs border"
-                        >
-                          {tag.name}
-                        </Badge>
-                      ))}
-                    </div>
+                    {/* Tags in Card */}
+                    {post.tags && post.tags.length > 0 && (
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {post.tags.slice(0, 3).map((tag, index) => (
+                            <Badge
+                              key={tag.id}
+                              style={{ 
+                                backgroundColor: tag.color + '20', 
+                                color: tag.color, 
+                                borderColor: tag.color,
+                                animationDelay: `${(cardIndex * 100) + (index * 50)}ms`
+                              }}
+                              className="text-xs border px-2 py-0.5 hover:scale-110 transition-all duration-300 animate-fade-in"
+                            >
+                              <div
+                                className="w-1.5 h-1.5 rounded-full mr-1"
+                                style={{ backgroundColor: tag.color }}
+                              />
+                              {tag.name}
+                            </Badge>
+                          ))}
+                          {post.tags.length > 3 && (
+                            <span className="text-xs text-gray-400 px-2 py-0.5">+{post.tags.length - 3}</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
                     
                     <h3 className="text-xl font-bold leading-tight text-white">
                       <Link
