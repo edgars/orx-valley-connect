@@ -1,172 +1,208 @@
 
-import { useAuth } from '@/contexts/AuthContext';
+import { useState } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useIsAdmin } from '@/hooks/useUsers';
+import { useAuth } from '@/contexts/AuthContext';
+import { Menu, X, User, LogOut } from 'lucide-react';
 
 const Header = () => {
-  const { user, loading, signOut } = useAuth();
-  const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, signOut } = useAuth();
   const location = useLocation();
-  const isAdmin = useIsAdmin();
 
-  const handleSignOut = async () => {
-    await signOut();
-    navigate('/');
-  };
+  const isAdmin = profile?.role === 'administrador';
+  const isAdminRoute = location.pathname.includes('/admin') || 
+                      location.pathname.includes('/gerenciar') ||
+                      location.pathname === '/eventos/gerenciar' ||
+                      location.pathname === '/blog/gerenciar';
 
-  const handleNavigation = (hash: string) => {
-    // Se estiver numa página de administração, redireciona para home primeiro
-    const isAdminPage = location.pathname.includes('/admin') || location.pathname.includes('/eventos/gerenciar');
-    
-    if (isAdminPage) {
-      navigate('/' + hash);
-    } else {
-      // Se já estiver na home, apenas faz scroll
-      if (location.pathname === '/') {
-        const element = document.querySelector(hash);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth' });
-        }
-      } else {
-        navigate('/' + hash);
-      }
+  const handleLogoClick = () => {
+    if (isAdminRoute) {
+      window.location.href = '/';
     }
   };
 
-  const getUserDisplayName = () => {
-    if (!user) return '';
-    return user.user_metadata?.full_name || user.email?.split('@')[0] || 'Usuário';
-  };
-
-  const getUserInitials = () => {
-    const name = getUserDisplayName();
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-  };
-
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
-          <div className="w-8 h-8 rounded-lg bg-orx-gradient flex items-center justify-center">
-            <span className="text-white font-bold text-sm">ORX</span>
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 shadow-sm">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between h-16">
+          <div className="flex items-center">
+            {isAdminRoute ? (
+              <button onClick={handleLogoClick} className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                  ORX
+                </div>
+                <span className="text-white text-xl font-semibold">ORX Valley</span>
+              </button>
+            ) : (
+              <Link to="/" className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                  ORX
+                </div>
+                <span className="text-white text-xl font-semibold">ORX Valley</span>
+              </Link>
+            )}
           </div>
-          <span className="text-xl font-bold text-gradient">ORX Valley</span>
-        </div>
 
-        <nav className="hidden md:flex items-center space-x-8">
-          <button
-            onClick={() => handleNavigation('#eventos')}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Eventos
-          </button>
-          <button
-            onClick={() => handleNavigation('#comunidade')}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Comunidade
-          </button>
-          <button
-            onClick={() => handleNavigation('#sobre')}
-            className="text-muted-foreground hover:text-foreground transition-colors"
-          >
-            Sobre
-          </button>
-          {user && (
-            <>
-              <button
-                onClick={() => navigate('/membros')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Membros
-              </button>
-              <button
-                onClick={() => navigate('/meus-eventos')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Meus Eventos
-              </button>
-            </>
-          )}
-          {isAdmin && (
-            <>
-              <button
-                onClick={() => navigate('/admin')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Admin
-              </button>
-              <button
-                onClick={() => navigate('/eventos/gerenciar')}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Gestão de Eventos
-              </button>
-            </>
-          )}
-        </nav>
-
-        <div className="flex items-center space-x-4">
-          {loading ? (
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-          ) : user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback className="bg-orx-gradient text-white">{getUserInitials()}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background border-border z-50">
-                <DropdownMenuItem>
-                  <span className="font-medium">{getUserDisplayName()}</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/perfil')}>
-                  Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/meus-eventos')}>
-                  Meus Eventos
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => navigate('/membros')}>
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <a href="#eventos" className="text-gray-300 hover:text-white transition-colors">
+              Eventos
+            </a>
+            <Link to="/membros" className="text-gray-300 hover:text-white transition-colors">
+              Comunidade
+            </Link>
+            <Link to="/blog" className="text-gray-300 hover:text-white transition-colors">
+              Sobre
+            </Link>
+            {user && (
+              <>
+                <Link to="/membros" className="text-gray-300 hover:text-white transition-colors">
                   Membros
-                </DropdownMenuItem>
+                </Link>
+                <Link to="/meus-eventos" className="text-gray-300 hover:text-white transition-colors">
+                  Meus Eventos
+                </Link>
                 {isAdmin && (
                   <>
-                    <DropdownMenuItem onClick={() => navigate('/admin')}>
-                      Administração
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => navigate('/eventos/gerenciar')}>
+                    <Link to="/admin" className="text-gray-300 hover:text-white transition-colors">
+                      Admin
+                    </Link>
+                    <Link to="/eventos/gerenciar" className="text-gray-300 hover:text-white transition-colors">
                       Gestão de Eventos
-                    </DropdownMenuItem>
+                    </Link>
                   </>
                 )}
-                <DropdownMenuItem onClick={handleSignOut}>
+              </>
+            )}
+          </nav>
+
+          {/* User Menu */}
+          <div className="hidden md:flex items-center space-x-4">
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <Link to="/perfil">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800">
+                    <User className="w-4 h-4 mr-2" />
+                    {profile?.full_name || 'Perfil'}
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-white hover:bg-gray-800">
+                  <LogOut className="w-4 h-4 mr-2" />
                   Sair
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <Button variant="ghost" onClick={() => navigate('/auth')}>
-                Entrar
-              </Button>
-              <Button 
-                className="bg-orx-gradient hover:opacity-90 text-white"
-                onClick={() => navigate('/auth')}
-              >
-                Cadastrar
-              </Button>
-            </div>
-          )}
+                </Button>
+              </div>
+            ) : (
+              <Link to="/auth">
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white">
+                  Entrar
+                </Button>
+              </Link>
+            )}
+          </div>
+
+          {/* Mobile menu button */}
+          <div className="md:hidden">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white"
+            >
+              {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </Button>
+          </div>
         </div>
+
+        {/* Mobile Navigation */}
+        {isMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-700">
+            <nav className="flex flex-col space-y-4">
+              <a 
+                href="#eventos" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Eventos
+              </a>
+              <Link 
+                to="/membros" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Comunidade
+              </Link>
+              <Link 
+                to="/blog" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sobre
+              </Link>
+              {user && (
+                <>
+                  <Link 
+                    to="/membros" 
+                    className="text-gray-300 hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Membros
+                  </Link>
+                  <Link 
+                    to="/meus-eventos" 
+                    className="text-gray-300 hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Meus Eventos
+                  </Link>
+                  {isAdmin && (
+                    <>
+                      <Link 
+                        to="/admin" 
+                        className="text-gray-300 hover:text-white transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Admin
+                      </Link>
+                      <Link 
+                        to="/eventos/gerenciar" 
+                        className="text-gray-300 hover:text-white transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Gestão de Eventos
+                      </Link>
+                    </>
+                  )}
+                  <Link 
+                    to="/perfil" 
+                    className="text-gray-300 hover:text-white transition-colors"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Perfil
+                  </Link>
+                  <button 
+                    onClick={() => {
+                      signOut();
+                      setIsMenuOpen(false);
+                    }}
+                    className="text-gray-300 hover:text-white transition-colors text-left"
+                  >
+                    Sair
+                  </button>
+                </>
+              )}
+              {!user && (
+                <Link 
+                  to="/auth" 
+                  className="text-gray-300 hover:text-white transition-colors"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Entrar
+                </Link>
+              )}
+            </nav>
+          </div>
+        )}
       </div>
     </header>
   );

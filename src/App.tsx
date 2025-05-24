@@ -13,6 +13,9 @@ import Profile from "./pages/Profile";
 import EventManagement from "./pages/EventManagement";
 import Members from "./pages/Members";
 import MyEvents from "./pages/MyEvents";
+import Blog from "./pages/Blog";
+import BlogPost from "./pages/BlogPost";
+import BlogManagement from "./pages/BlogManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -32,6 +35,9 @@ const App = () => (
             <Route path="/eventos/gerenciar" element={<EventManagement />} />
             <Route path="/membros" element={<Members />} />
             <Route path="/meus-eventos" element={<MyEvents />} />
+            <Route path="/blog" element={<Blog />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/blog/gerenciar" element={<BlogManagement />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
