@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import Header from '@/components/Header';
@@ -20,7 +21,7 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-white">Carregando...</div>
         </div>
         <Footer />
@@ -32,9 +33,9 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4 text-white">Post não encontrado</h1>
+            <h1 className="text-xl sm:text-2xl font-bold mb-4 text-white">Post não encontrado</h1>
             <Link to="/blog">
               <Button className="bg-blue-600 hover:bg-blue-700">Voltar ao Blog</Button>
             </Link>
@@ -50,16 +51,16 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       <Header />
-      <main className="container mx-auto px-4 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
         <div className="max-w-4xl mx-auto">
-          <Link to="/blog" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-6 transition-colors">
+          <Link to="/blog" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4 sm:mb-6 transition-colors text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Blog
           </Link>
 
           <article className="animate-fade-in">
             {post.featured_image_url && (
-              <div className="aspect-video overflow-hidden rounded-lg mb-6 animate-scale-in">
+              <div className="aspect-video overflow-hidden rounded-lg mb-4 sm:mb-6 animate-scale-in">
                 <img
                   src={post.featured_image_url}
                   alt={post.title}
@@ -70,7 +71,7 @@ const BlogPost = () => {
 
             {/* Tags Section with Animation */}
             {post.tags && post.tags.length > 0 && (
-              <div className="mb-6">
+              <div className="mb-4 sm:mb-6">
                 <div className="flex items-center gap-2 mb-3">
                   <Tag className="w-4 h-4 text-gray-400" />
                   <span className="text-sm text-gray-400">Tags:</span>
@@ -86,10 +87,10 @@ const BlogPost = () => {
                         animationDelay: `${index * 100}ms`,
                         boxShadow: `0 0 10px ${tag.color}20`
                       }}
-                      className="border-2 px-3 py-1 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in hover:shadow-lg"
+                      className="border-2 px-2 sm:px-3 py-1 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in hover:shadow-lg text-xs sm:text-sm"
                     >
                       <div
-                        className="w-2 h-2 rounded-full mr-2 animate-pulse"
+                        className="w-2 h-2 rounded-full mr-1 sm:mr-2 animate-pulse"
                         style={{ backgroundColor: tag.color }}
                       />
                       {tag.name}
@@ -99,11 +100,11 @@ const BlogPost = () => {
               </div>
             )}
 
-            <h1 className="text-4xl font-bold mb-4 text-white animate-fade-in" style={{ animationDelay: '200ms' }}>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 text-white animate-fade-in leading-tight" style={{ animationDelay: '200ms' }}>
               {post.title}
             </h1>
 
-            <div className="flex items-center gap-4 text-gray-400 mb-6 animate-fade-in" style={{ animationDelay: '300ms' }}>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-gray-400 mb-4 sm:mb-6 animate-fade-in text-sm" style={{ animationDelay: '300ms' }}>
               <div className="flex items-center gap-1">
                 <Calendar className="w-4 h-4" />
                 {post.published_at && format(new Date(post.published_at), 'dd/MM/yyyy', { locale: ptBR })}
@@ -115,22 +116,22 @@ const BlogPost = () => {
             </div>
 
             {post.excerpt && (
-              <div className="text-xl text-gray-300 mb-8 font-medium leading-relaxed animate-fade-in" style={{ animationDelay: '400ms' }}>
+              <div className="text-lg sm:text-xl text-gray-300 mb-6 sm:mb-8 font-medium leading-relaxed animate-fade-in" style={{ animationDelay: '400ms' }}>
                 {post.excerpt}
               </div>
             )}
 
-            <div className="prose prose-lg max-w-none mb-12 text-gray-300 animate-fade-in" style={{ animationDelay: '500ms' }}>
+            <div className="prose prose-sm sm:prose-lg max-w-none mb-8 sm:mb-12 text-gray-300 animate-fade-in" style={{ animationDelay: '500ms' }}>
               <ReactMarkdown
                 components={{
-                  h1: ({ children }) => <h1 className="text-3xl font-bold mt-8 mb-4 text-white">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-2xl font-bold mt-6 mb-3 text-white">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-xl font-bold mt-4 mb-2 text-white">{children}</h3>,
-                  p: ({ children }) => <p className="mb-4 leading-relaxed text-gray-300">{children}</p>,
+                  h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4 text-white">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-2 sm:mb-3 text-white">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-lg sm:text-xl font-bold mt-3 sm:mt-4 mb-2 text-white">{children}</h3>,
+                  p: ({ children }) => <p className="mb-4 leading-relaxed text-gray-300 text-sm sm:text-base">{children}</p>,
                   a: ({ children, href }) => <a href={href} className="text-blue-400 hover:text-blue-300 transition-colors">{children}</a>,
-                  code: ({ children }) => <code className="bg-gray-800 px-1 py-0.5 rounded text-sm text-gray-300">{children}</code>,
-                  pre: ({ children }) => <pre className="bg-gray-800 p-4 rounded-lg overflow-x-auto mb-4 text-gray-300">{children}</pre>,
-                  blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-500 pl-4 italic my-4 text-gray-400">{children}</blockquote>,
+                  code: ({ children }) => <code className="bg-gray-800 px-1 py-0.5 rounded text-xs sm:text-sm text-gray-300">{children}</code>,
+                  pre: ({ children }) => <pre className="bg-gray-800 p-3 sm:p-4 rounded-lg overflow-x-auto mb-4 text-gray-300 text-xs sm:text-sm">{children}</pre>,
+                  blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-500 pl-3 sm:pl-4 italic my-4 text-gray-400 text-sm sm:text-base">{children}</blockquote>,
                 }}
               >
                 {post.content}
@@ -138,22 +139,22 @@ const BlogPost = () => {
             </div>
 
             {/* Author Info Block */}
-            <Card className="mb-8 bg-gray-800 border-gray-700 animate-fade-in" style={{ animationDelay: '600ms' }}>
-              <CardContent className="p-6">
-                <div className="flex items-start gap-4">
-                  <Avatar className="w-16 h-16 hover:scale-110 transition-transform duration-300">
+            <Card className="mb-6 sm:mb-8 bg-gray-800 border-gray-700 animate-fade-in" style={{ animationDelay: '600ms' }}>
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex items-start gap-3 sm:gap-4">
+                  <Avatar className="w-12 h-12 sm:w-16 sm:h-16 hover:scale-110 transition-transform duration-300 flex-shrink-0">
                     <AvatarImage src={post.author?.avatar_url} />
                     <AvatarFallback className="bg-gray-700 text-white">
                       {post.author?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold mb-2 text-white">Sobre o autor</h3>
-                    <p className="text-gray-300 mb-3">
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base sm:text-lg font-semibold mb-2 text-white">Sobre o autor</h3>
+                    <p className="text-gray-300 mb-2 sm:mb-3 text-sm sm:text-base">
                       <strong>{post.author?.full_name}</strong>
                     </p>
-                    <div className="flex items-center gap-2 text-sm text-gray-400">
-                      <User className="w-4 h-4" />
+                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
+                      <User className="w-3 h-3 sm:w-4 sm:h-4" />
                       {authorPosts?.length || 0} {(authorPosts?.length || 0) === 1 ? 'post publicado' : 'posts publicados'}
                     </div>
                   </div>
@@ -164,8 +165,8 @@ const BlogPost = () => {
             {/* More Posts by Author */}
             {authorPosts && authorPosts.length > 1 && (
               <div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
-                <h3 className="text-2xl font-bold mb-6 text-white">Mais posts de {post.author?.full_name}</h3>
-                <div className="grid gap-6 md:grid-cols-2">
+                <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Mais posts de {post.author?.full_name}</h3>
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
                   {authorPosts
                     .filter(p => p.id !== post.id)
                     .slice(0, 4)
@@ -184,9 +185,9 @@ const BlogPost = () => {
                             />
                           </div>
                         )}
-                        <CardContent className="p-4">
+                        <CardContent className="p-3 sm:p-4">
                           {relatedPost.tags && relatedPost.tags.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mb-3">
+                            <div className="flex flex-wrap gap-1 mb-2 sm:mb-3">
                               {relatedPost.tags.slice(0, 2).map((tag) => (
                                 <Badge
                                   key={tag.id}
@@ -205,7 +206,7 @@ const BlogPost = () => {
                               )}
                             </div>
                           )}
-                          <h4 className="font-semibold mb-2 line-clamp-2 text-white">
+                          <h4 className="font-semibold mb-2 line-clamp-2 text-white text-sm sm:text-base">
                             <Link
                               to={`/blog/${relatedPost.slug}`}
                               className="hover:text-blue-400 transition-colors"
@@ -213,7 +214,7 @@ const BlogPost = () => {
                               {relatedPost.title}
                             </Link>
                           </h4>
-                          <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                          <p className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3 line-clamp-2">
                             {relatedPost.excerpt}
                           </p>
                           <div className="flex items-center gap-2 text-xs text-gray-400">
