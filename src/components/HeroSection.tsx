@@ -17,12 +17,12 @@ const HeroSection = () => {
             <h1 className="text-6xl lg:text-8xl font-bold leading-tight">
               <span className="text-gradient animate-text-glow">ORX Valley</span>
               <br />
-              <span className="text-foreground">Conectando</span>
+              <span className="text-foreground">Criando</span>
               <br />
               <span className="text-gradient">Talentos</span>
             </h1>
             <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              A maior comunidade de tecnologia do Vale do Paraíba. 
+              Comunidadee de tecnologia no Oeste do Pará (Oriximiná). 
               Participe de eventos, workshops e conecte-se com outros profissionais.
             </p>
           </div>
