@@ -623,6 +623,83 @@ export type Database = {
         }
         Relationships: []
       }
+      event_registrations: {
+        Row: {
+          event_id: string
+          id: string
+          registered_at: string | null
+          user_id: string
+        }
+        Insert: {
+          event_id: string
+          id?: string
+          registered_at?: string | null
+          user_id: string
+        }
+        Update: {
+          event_id?: string
+          id?: string
+          registered_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_registrations_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          created_at: string | null
+          current_participants: number | null
+          date_time: string
+          description: string
+          id: string
+          image_url: string | null
+          location: string
+          max_participants: number | null
+          organizer_id: string
+          status: Database["public"]["Enums"]["event_status"] | null
+          title: string
+          type: Database["public"]["Enums"]["event_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_participants?: number | null
+          date_time: string
+          description: string
+          id?: string
+          image_url?: string | null
+          location: string
+          max_participants?: number | null
+          organizer_id: string
+          status?: Database["public"]["Enums"]["event_status"] | null
+          title: string
+          type?: Database["public"]["Enums"]["event_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_participants?: number | null
+          date_time?: string
+          description?: string
+          id?: string
+          image_url?: string | null
+          location?: string
+          max_participants?: number | null
+          organizer_id?: string
+          status?: Database["public"]["Enums"]["event_status"] | null
+          title?: string
+          type?: Database["public"]["Enums"]["event_type"]
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       leads: {
         Row: {
           data_atualizacao: string | null
@@ -825,6 +902,7 @@ export type Database = {
         Row: {
           avatar_url: string | null
           bio: string | null
+          company: string | null
           created_at: string | null
           full_name: string | null
           github_url: string | null
@@ -832,13 +910,17 @@ export type Database = {
           interests: string[] | null
           linkedin_url: string | null
           location: string | null
+          phone: string | null
           portfolio_url: string | null
+          position: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string | null
           username: string | null
         }
         Insert: {
           avatar_url?: string | null
           bio?: string | null
+          company?: string | null
           created_at?: string | null
           full_name?: string | null
           github_url?: string | null
@@ -846,13 +928,17 @@ export type Database = {
           interests?: string[] | null
           linkedin_url?: string | null
           location?: string | null
+          phone?: string | null
           portfolio_url?: string | null
+          position?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
           username?: string | null
         }
         Update: {
           avatar_url?: string | null
           bio?: string | null
+          company?: string | null
           created_at?: string | null
           full_name?: string | null
           github_url?: string | null
@@ -860,7 +946,10 @@ export type Database = {
           interests?: string[] | null
           linkedin_url?: string | null
           location?: string | null
+          phone?: string | null
           portfolio_url?: string | null
+          position?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1238,8 +1327,11 @@ export type Database = {
     Enums: {
       account_status: "active" | "inactive" | "blocked" | "closed"
       customer_status: "active" | "inactive" | "suspended"
+      event_status: "ativo" | "cancelado" | "finalizado"
+      event_type: "presencial" | "online" | "hibrido"
       situacao_licitacao: "Aberta" | "Finalizada"
       transaction_status: "pending" | "completed" | "failed" | "cancelled"
+      user_role: "usuario" | "administrador"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1357,8 +1449,11 @@ export const Constants = {
     Enums: {
       account_status: ["active", "inactive", "blocked", "closed"],
       customer_status: ["active", "inactive", "suspended"],
+      event_status: ["ativo", "cancelado", "finalizado"],
+      event_type: ["presencial", "online", "hibrido"],
       situacao_licitacao: ["Aberta", "Finalizada"],
       transaction_status: ["pending", "completed", "failed", "cancelled"],
+      user_role: ["usuario", "administrador"],
     },
   },
 } as const

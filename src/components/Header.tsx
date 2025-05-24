@@ -9,10 +9,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useNavigate } from 'react-router-dom';
+import { useIsAdmin } from '@/hooks/useUsers';
 
 const Header = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const isAdmin = useIsAdmin();
 
   const handleSignOut = async () => {
     await signOut();
@@ -30,9 +32,9 @@ const Header = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container flex h-16 items-center justify-between">
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 cursor-pointer" onClick={() => navigate('/')}>
           <div className="w-8 h-8 rounded-lg bg-orx-gradient flex items-center justify-center">
             <span className="text-white font-bold text-sm">ORX</span>
           </div>
@@ -49,6 +51,14 @@ const Header = () => {
           <a href="#sobre" className="text-muted-foreground hover:text-foreground transition-colors">
             Sobre
           </a>
+          {isAdmin && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Admin
+            </button>
+          )}
         </nav>
 
         <div className="flex items-center space-x-4">
@@ -59,16 +69,21 @@ const Header = () => {
               <DropdownMenuTrigger asChild>
                 <Avatar className="cursor-pointer">
                   <AvatarImage src={user.user_metadata?.avatar_url} />
-                  <AvatarFallback>{getUserInitials()}</AvatarFallback>
+                  <AvatarFallback className="bg-orx-gradient text-white">{getUserInitials()}</AvatarFallback>
                 </Avatar>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-background z-50">
+              <DropdownMenuContent align="end" className="bg-background border-border z-50">
                 <DropdownMenuItem>
                   <span className="font-medium">{getUserDisplayName()}</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem>Perfil</DropdownMenuItem>
-                <DropdownMenuItem>Meus Eventos</DropdownMenuItem>
-                <DropdownMenuItem>Configurações</DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/perfil')}>
+                  Perfil
+                </DropdownMenuItem>
+                {isAdmin && (
+                  <DropdownMenuItem onClick={() => navigate('/admin')}>
+                    Administração
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuItem onClick={handleSignOut}>
                   Sair
                 </DropdownMenuItem>
