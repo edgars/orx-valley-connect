@@ -821,6 +821,51 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          bio: string | null
+          created_at: string | null
+          full_name: string | null
+          github_url: string | null
+          id: string
+          interests: string[] | null
+          linkedin_url: string | null
+          location: string | null
+          portfolio_url: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id: string
+          interests?: string[] | null
+          linkedin_url?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          avatar_url?: string | null
+          bio?: string | null
+          created_at?: string | null
+          full_name?: string | null
+          github_url?: string | null
+          id?: string
+          interests?: string[] | null
+          linkedin_url?: string | null
+          location?: string | null
+          portfolio_url?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
       site_documents: {
         Row: {
           content: string | null
