@@ -71,6 +71,7 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
       color: randomColor
     }, {
       onSuccess: (newTag) => {
+        // Apenas adicionar a tag, não navegar
         addTag(newTag);
       }
     });
