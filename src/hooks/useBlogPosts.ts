@@ -56,11 +56,12 @@ export const useBlogPosts = (status?: string) => {
   });
 };
 
-export const useBlogPost = (slug: string) => {
+export const useBlogPost = (identifier: string) => {
   return useQuery({
-    queryKey: ['blog-post', slug],
+    queryKey: ['blog-post', identifier],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // Try to get by ID first, then by slug
+      let query = supabase
         .from('blog_posts')
         .select(`
           *,
@@ -68,10 +69,18 @@ export const useBlogPost = (slug: string) => {
           tags:blog_post_tags(
             tag:blog_tags(id, name, color)
           )
-        `)
-        .eq('slug', slug)
-        .single();
+        `);
 
+      // Check if identifier is a UUID (ID) or slug
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(identifier);
+      
+      if (isUUID) {
+        query = query.eq('id', identifier);
+      } else {
+        query = query.eq('slug', identifier);
+      }
+
+      const { data, error } = await query.single();
       if (error) throw error;
 
       return {
@@ -79,7 +88,7 @@ export const useBlogPost = (slug: string) => {
         tags: data.tags?.map((pt: any) => pt.tag).filter(Boolean) || []
       } as BlogPost;
     },
-    enabled: !!slug
+    enabled: !!identifier
   });
 };
 
@@ -136,5 +145,95 @@ export const useCreateBlogPost = () => {
         variant: "destructive",
       });
     }
+  });
+};
+
+export const useUpdateBlogPost = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ id, tags, ...postData }: { id: string; tags?: { id: string; name: string; color: string; }[] } & Partial<BlogPost>) => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update({
+          ...postData,
+          updated_at: new Date().toISOString(),
+          published_at: postData.status === 'published' ? new Date().toISOString() : null
+        })
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Update tags if provided
+      if (tags !== undefined) {
+        // Delete existing tags
+        await supabase
+          .from('blog_post_tags')
+          .delete()
+          .eq('post_id', id);
+
+        // Insert new tags
+        if (tags.length > 0) {
+          const tagInserts = tags.map(tag => ({
+            post_id: id,
+            tag_id: tag.id
+          }));
+
+          const { error: tagsError } = await supabase
+            .from('blog_post_tags')
+            .insert(tagInserts);
+
+          if (tagsError) throw tagsError;
+        }
+      }
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['blog-post'] });
+      toast({
+        title: "Post atualizado com sucesso!",
+        description: "As alterações foram salvas.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar post",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useBlogPostsByAuthor = (authorId: string) => {
+  return useQuery({
+    queryKey: ['blog-posts-author', authorId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .select(`
+          *,
+          author:profiles(full_name, avatar_url),
+          tags:blog_post_tags(
+            tag:blog_tags(id, name, color)
+          )
+        `)
+        .eq('author_id', authorId)
+        .eq('status', 'published')
+        .order('published_at', { ascending: false });
+
+      if (error) throw error;
+
+      return data?.map(post => ({
+        ...post,
+        tags: post.tags?.map((pt: any) => pt.tag).filter(Boolean) || []
+      })) as BlogPost[];
+    },
+    enabled: !!authorId
   });
 };
