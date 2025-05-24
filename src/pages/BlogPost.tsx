@@ -10,7 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useBlogPost, useBlogPostsByAuthor } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Calendar, User, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, Tag, ExternalLink } from 'lucide-react';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -83,7 +83,6 @@ const BlogPost = () => {
                 {estimatedReadTime} min de leitura
               </div>
               
-              {/* Tags na mesma linha das informações de data/tempo */}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4 text-gray-400" />
@@ -149,9 +148,20 @@ const BlogPost = () => {
                     <p className="text-gray-300 mb-2 sm:mb-3 text-sm sm:text-base">
                       <strong>{post.author?.full_name}</strong>
                     </p>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
-                      <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                      {authorPosts?.length || 0} {(authorPosts?.length || 0) === 1 ? 'post publicado' : 'posts publicados'}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {authorPosts?.length || 0} {(authorPosts?.length || 0) === 1 ? 'post publicado' : 'posts publicados'}
+                      </div>
+                      {authorPosts && authorPosts.length > 1 && (
+                        <Link 
+                          to={`/blog?author=${post.author_id}`}
+                          className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                          Ver todos os posts
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>
