@@ -11,6 +11,7 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import EventManagement from "./pages/EventManagement";
+import EventDetails from "./pages/EventDetails";
 import Members from "./pages/Members";
 import MyEvents from "./pages/MyEvents";
 import Blog from "./pages/Blog";
@@ -35,6 +36,7 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/perfil" element={<Profile />} />
             <Route path="/eventos/gerenciar" element={<EventManagement />} />
+            <Route path="/eventos/:id" element={<EventDetails />} />
             <Route path="/membros" element={<Members />} />
             <Route path="/meus-eventos" element={<MyEvents />} />
             <Route path="/blog" element={<Blog />} />

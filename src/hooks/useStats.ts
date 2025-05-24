@@ -22,10 +22,16 @@ export const useStats = () => {
         .select('*', { count: 'exact', head: true })
         .eq('is_active', true);
 
+      // Get total participations count
+      const { count: totalParticipations } = await supabase
+        .from('event_registrations')
+        .select('*', { count: 'exact', head: true });
+
       return {
         members: membersCount || 0,
         events: eventsCount || 0,
-        sponsors: sponsorsCount || 0
+        sponsors: sponsorsCount || 0,
+        totalParticipations: totalParticipations || 0
       };
     }
   });

@@ -2,7 +2,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe } from 'lucide-react';
+import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe, Eye } from 'lucide-react';
 import { Event } from '@/hooks/useEvents';
 import { useRegisterForEvent } from '@/hooks/useEvents';
 import { useCheckEventRegistration } from '@/hooks/useEventRegistrations';
@@ -10,6 +10,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 interface EventCardProps {
   event: Event;
@@ -18,6 +19,7 @@ interface EventCardProps {
 const EventCard = ({ event }: EventCardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const registerMutation = useRegisterForEvent();
   const { data: isRegistered, isLoading: checkingRegistration } = useCheckEventRegistration(event.id);
 
@@ -41,6 +43,10 @@ const EventCard = ({ event }: EventCardProps) => {
     }
 
     registerMutation.mutate(event.id);
+  };
+
+  const handleViewDetails = () => {
+    navigate(`/eventos/${event.id}`);
   };
 
   const generateCalendarEvent = () => {
@@ -175,6 +181,15 @@ const EventCard = ({ event }: EventCardProps) => {
       
       <CardFooter className="space-y-2">
         <div className="w-full space-y-2">
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={handleViewDetails}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Ver Detalhes
+          </Button>
+
           {!isPastEvent && (
             <Button 
               className="w-full bg-orx-gradient hover:opacity-90 text-white"
