@@ -40,6 +40,11 @@ export const useAuth = () => {
   return context;
 };
 
+const generateUsernameFromEmail = (email: string): string => {
+  const localPart = email.split('@')[0];
+  return localPart.toLowerCase().replace(/[^a-z0-9]/g, '');
+};
+
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -65,6 +70,55 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const createOrUpdateProfile = async (user: User) => {
+    try {
+      const { data: existingProfile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      if (!existingProfile) {
+        // Create new profile with Google photo and generated username
+        const avatarUrl = user.user_metadata?.avatar_url || null;
+        const fullName = user.user_metadata?.full_name || user.user_metadata?.name || null;
+        const suggestedUsername = generateUsernameFromEmail(user.email || '');
+
+        const { error } = await supabase
+          .from('profiles')
+          .insert({
+            id: user.id,
+            full_name: fullName,
+            username: suggestedUsername,
+            avatar_url: avatarUrl,
+            role: 'usuario'
+          });
+
+        if (error) {
+          console.error('Error creating profile:', error);
+        } else {
+          await fetchProfile(user.id);
+        }
+      } else if (!existingProfile.avatar_url && user.user_metadata?.avatar_url) {
+        // Update existing profile with Google photo if not set
+        const { error } = await supabase
+          .from('profiles')
+          .update({ avatar_url: user.user_metadata.avatar_url })
+          .eq('id', user.id);
+
+        if (error) {
+          console.error('Error updating profile with avatar:', error);
+        } else {
+          await fetchProfile(user.id);
+        }
+      } else {
+        setProfile(existingProfile);
+      }
+    } catch (error) {
+      console.error('Error creating/updating profile:', error);
+    }
+  };
+
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -73,7 +127,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         
         if (session?.user) {
-          await fetchProfile(session.user.id);
+          setTimeout(() => {
+            createOrUpdateProfile(session.user);
+          }, 0);
         } else {
           setProfile(null);
         }
@@ -87,7 +143,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(session?.user ?? null);
       
       if (session?.user) {
-        await fetchProfile(session.user.id);
+        await createOrUpdateProfile(session.user);
       }
       setLoading(false);
     });

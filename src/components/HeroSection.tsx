@@ -2,30 +2,32 @@
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStats } from '@/hooks/useStats';
 
 const HeroSection = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { data: stats } = useStats();
 
   return (
-    <section id="inicio" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-muted/50 pt-16">
+    <section id="inicio" className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-background/95 to-muted/50">
       <div className="container relative z-10 text-center py-20">
         <div className="space-y-8">
           <div className="space-y-4">
             <h1 className="text-6xl lg:text-8xl font-bold leading-tight">
-              <span className="text-gradient animate-pulse">ORX Valley</span>
+              <span className="text-gradient animate-text-glow">ORX Valley</span>
               <br />
-              <span className="text-foreground animate-fade-in" style={{ animationDelay: '0.5s' }}>Conectando</span>
+              <span className="text-foreground">Conectando</span>
               <br />
-              <span className="text-gradient animate-fade-in" style={{ animationDelay: '1s' }}>Talentos</span>
+              <span className="text-gradient">Talentos</span>
             </h1>
-            <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto animate-fade-in" style={{ animationDelay: '1.5s' }}>
+            <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
               A maior comunidade de tecnologia do Vale do Paraíba. 
               Participe de eventos, workshops e conecte-se com outros profissionais.
             </p>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-4 justify-center animate-fade-in" style={{ animationDelay: '2s' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             {user ? (
               <Button 
                 size="lg" 
@@ -55,18 +57,18 @@ const HeroSection = () => {
             )}
           </div>
 
-          <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '2.5s' }}>
+          <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-              <span>500+ Membros</span>
+              <span>{stats?.members || 0}+ Membros</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
-              <span>50+ Eventos</span>
+              <span>{stats?.events || 0}+ Eventos</span>
             </div>
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-purple-500 rounded-full animate-pulse"></div>
-              <span>20+ Empresas</span>
+              <span>{stats?.sponsors || 0}+ Empresas</span>
             </div>
           </div>
         </div>

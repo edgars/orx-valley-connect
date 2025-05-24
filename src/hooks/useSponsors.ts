@@ -16,6 +16,15 @@ export interface Sponsor {
   updated_at: string;
 }
 
+export interface SponsorFormData {
+  name: string;
+  logo_url: string;
+  website_url?: string;
+  description?: string;
+  tier: 'diamond' | 'platinum' | 'gold' | 'silver' | 'bronze';
+  display_order: number;
+}
+
 export const useSponsors = () => {
   return useQuery({
     queryKey: ['sponsors'],
@@ -33,15 +42,39 @@ export const useSponsors = () => {
   });
 };
 
+const validateImageDimensions = (url: string): Promise<{ width: number; height: number; isValid: boolean }> => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const isValid = img.width >= 200 && img.height >= 100 && img.width <= 800 && img.height <= 400;
+      resolve({ width: img.width, height: img.height, isValid });
+    };
+    img.onerror = () => {
+      resolve({ width: 0, height: 0, isValid: false });
+    };
+    img.src = url;
+  });
+};
+
 export const useCreateSponsor = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
   return useMutation({
-    mutationFn: async (sponsorData: Omit<Sponsor, 'id' | 'created_at' | 'updated_at'>) => {
+    mutationFn: async (sponsorData: SponsorFormData) => {
+      // Validate image dimensions
+      const { width, height, isValid } = await validateImageDimensions(sponsorData.logo_url);
+      
+      if (!isValid) {
+        throw new Error(`Logo deve ter dimensões entre 200x100 e 800x400 pixels. Dimensões atuais: ${width}x${height}px`);
+      }
+
       const { data, error } = await supabase
         .from('sponsors')
-        .insert(sponsorData)
+        .insert({
+          ...sponsorData,
+          is_active: true
+        })
         .select()
         .single();
 
@@ -50,8 +83,10 @@ export const useCreateSponsor = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['sponsors'] });
+      queryClient.invalidateQueries({ queryKey: ['stats'] });
       toast({
         title: "Apoiador adicionado com sucesso!",
+        description: "O logo foi validado e o apoiador foi cadastrado.",
       });
     },
     onError: (error: any) => {

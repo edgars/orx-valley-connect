@@ -23,47 +23,53 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm shadow-sm border-b">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-gray-900 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
             {isAdminRoute ? (
-              <button onClick={handleLogoClick} className="text-2xl font-bold text-gradient hover:opacity-80">
-                ORX Valley
+              <button onClick={handleLogoClick} className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                  ORX
+                </div>
+                <span className="text-white text-xl font-semibold">ORX Valley</span>
               </button>
             ) : (
-              <Link to="/" className="text-2xl font-bold text-gradient">
-                ORX Valley
+              <Link to="/" className="flex items-center space-x-2">
+                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
+                  ORX
+                </div>
+                <span className="text-white text-xl font-semibold">ORX Valley</span>
               </Link>
             )}
           </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#inicio" className="text-gray-700 hover:text-primary transition-colors">
-              Início
-            </a>
-            <a href="#eventos" className="text-gray-700 hover:text-primary transition-colors">
+            <a href="#eventos" className="text-gray-300 hover:text-white transition-colors">
               Eventos
             </a>
-            <Link to="/blog" className="text-gray-700 hover:text-primary transition-colors">
-              Blog
+            <Link to="/membros" className="text-gray-300 hover:text-white transition-colors">
+              Comunidade
+            </Link>
+            <Link to="/blog" className="text-gray-300 hover:text-white transition-colors">
+              Sobre
             </Link>
             {user && (
               <>
-                <Link to="/membros" className="text-gray-700 hover:text-primary transition-colors">
+                <Link to="/membros" className="text-gray-300 hover:text-white transition-colors">
                   Membros
                 </Link>
-                <Link to="/meus-eventos" className="text-gray-700 hover:text-primary transition-colors">
+                <Link to="/meus-eventos" className="text-gray-300 hover:text-white transition-colors">
                   Meus Eventos
                 </Link>
                 {isAdmin && (
                   <>
-                    <Link to="/admin" className="text-gray-700 hover:text-primary transition-colors">
+                    <Link to="/admin" className="text-gray-300 hover:text-white transition-colors">
                       Admin
                     </Link>
-                    <Link to="/blog/gerenciar" className="text-gray-700 hover:text-primary transition-colors">
-                      Gerenciar Blog
+                    <Link to="/eventos/gerenciar" className="text-gray-300 hover:text-white transition-colors">
+                      Gestão de Eventos
                     </Link>
                   </>
                 )}
@@ -76,19 +82,19 @@ const Header = () => {
             {user ? (
               <div className="flex items-center space-x-4">
                 <Link to="/perfil">
-                  <Button variant="ghost" size="sm">
+                  <Button variant="ghost" size="sm" className="text-white hover:bg-gray-800">
                     <User className="w-4 h-4 mr-2" />
                     {profile?.full_name || 'Perfil'}
                   </Button>
                 </Link>
-                <Button variant="ghost" size="sm" onClick={signOut}>
+                <Button variant="ghost" size="sm" onClick={signOut} className="text-white hover:bg-gray-800">
                   <LogOut className="w-4 h-4 mr-2" />
                   Sair
                 </Button>
               </div>
             ) : (
               <Link to="/auth">
-                <Button className="bg-orx-gradient hover:opacity-90 text-white">
+                <Button className="bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white">
                   Entrar
                 </Button>
               </Link>
@@ -101,6 +107,7 @@ const Header = () => {
               variant="ghost"
               size="sm"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="text-white"
             >
               {isMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </Button>
@@ -109,41 +116,41 @@ const Header = () => {
 
         {/* Mobile Navigation */}
         {isMenuOpen && (
-          <div className="md:hidden py-4 border-t bg-white/95 backdrop-blur-sm">
+          <div className="md:hidden py-4 border-t border-gray-700">
             <nav className="flex flex-col space-y-4">
               <a 
-                href="#inicio" 
-                className="text-gray-700 hover:text-primary transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Início
-              </a>
-              <a 
                 href="#eventos" 
-                className="text-gray-700 hover:text-primary transition-colors"
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Eventos
               </a>
               <Link 
-                to="/blog" 
-                className="text-gray-700 hover:text-primary transition-colors"
+                to="/membros" 
+                className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Blog
+                Comunidade
+              </Link>
+              <Link 
+                to="/blog" 
+                className="text-gray-300 hover:text-white transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sobre
               </Link>
               {user && (
                 <>
                   <Link 
                     to="/membros" 
-                    className="text-gray-700 hover:text-primary transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Membros
                   </Link>
                   <Link 
                     to="/meus-eventos" 
-                    className="text-gray-700 hover:text-primary transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Meus Eventos
@@ -152,23 +159,23 @@ const Header = () => {
                     <>
                       <Link 
                         to="/admin" 
-                        className="text-gray-700 hover:text-primary transition-colors"
+                        className="text-gray-300 hover:text-white transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Admin
                       </Link>
                       <Link 
-                        to="/blog/gerenciar" 
-                        className="text-gray-700 hover:text-primary transition-colors"
+                        to="/eventos/gerenciar" 
+                        className="text-gray-300 hover:text-white transition-colors"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        Gerenciar Blog
+                        Gestão de Eventos
                       </Link>
                     </>
                   )}
                   <Link 
                     to="/perfil" 
-                    className="text-gray-700 hover:text-primary transition-colors"
+                    className="text-gray-300 hover:text-white transition-colors"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     Perfil
@@ -178,7 +185,7 @@ const Header = () => {
                       signOut();
                       setIsMenuOpen(false);
                     }}
-                    className="text-gray-700 hover:text-primary transition-colors text-left"
+                    className="text-gray-300 hover:text-white transition-colors text-left"
                   >
                     Sair
                   </button>
@@ -187,7 +194,7 @@ const Header = () => {
               {!user && (
                 <Link 
                   to="/auth" 
-                  className="text-gray-700 hover:text-primary transition-colors"
+                  className="text-gray-300 hover:text-white transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Entrar
