@@ -1,5 +1,4 @@
-
-import { useUsers, useUpdateUserRole, useIsAdmin } from '@/hooks/useUsers';
+import { useUsers, useUpdateUserRole, useUpdateUserStatus, useIsAdmin } from '@/hooks/useUsers';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Navigate } from 'react-router-dom';
@@ -12,6 +11,7 @@ const Admin = () => {
   const isAdmin = useIsAdmin();
   const { data: users, isLoading } = useUsers();
   const updateRoleMutation = useUpdateUserRole();
+  const updateStatusMutation = useUpdateUserStatus();
   const [searchTerm, setSearchTerm] = useState('');
 
   if (!isAdmin) {
@@ -23,8 +23,7 @@ const Admin = () => {
   };
 
   const handleStatusChange = (userId: string, status: 'active' | 'blocked') => {
-    // TODO: Implement status change functionality
-    console.log('Status change:', userId, status);
+    updateStatusMutation.mutate({ userId, status });
   };
 
   const filteredUsers = users?.filter(user => 
@@ -120,7 +119,7 @@ const Admin = () => {
                   user={user}
                   onRoleChange={handleRoleChange}
                   onStatusChange={handleStatusChange}
-                  isUpdating={updateRoleMutation.isPending}
+                  isUpdating={updateRoleMutation.isPending || updateStatusMutation.isPending}
                 />
               ))}
               
