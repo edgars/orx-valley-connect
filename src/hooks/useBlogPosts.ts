@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -115,11 +114,11 @@ export const useCreateBlogPost = () => {
 
       if (error) throw error;
 
-      // Fix: Extract only the ID from tag objects for database insertion
+      // Insert tags if provided
       if (tags && tags.length > 0) {
         const tagInserts = tags.map(tag => ({
           post_id: data.id,
-          tag_id: tag.id // Extract the ID from the tag object
+          tag_id: tag.id
         }));
 
         const { error: tagsError } = await supabase

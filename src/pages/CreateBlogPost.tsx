@@ -20,7 +20,6 @@ import { Calendar, Save, Eye } from 'lucide-react';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
-  content: z.string().min(1, 'Conteúdo é obrigatório'),
   excerpt: z.string().min(1, 'Resumo é obrigatório'),
   slug: z.string().min(1, 'Slug é obrigatório'),
   featured_image_url: z.string().url().optional().or(z.literal('')),
@@ -41,7 +40,6 @@ const CreateBlogPost = () => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: '',
-      content: '',
       excerpt: '',
       slug: '',
       featured_image_url: '',
@@ -79,8 +77,12 @@ const CreateBlogPost = () => {
     const selectedTags = tags?.filter(tag => data.tags?.includes(tag.id)) || [];
     
     createPost({
-      ...data,
+      title: data.title,
       content,
+      excerpt: data.excerpt,
+      slug: data.slug,
+      featured_image_url: data.featured_image_url,
+      status: data.status,
       tags: selectedTags
     }, {
       onSuccess: () => {
@@ -292,15 +294,22 @@ const CreateBlogPost = () => {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => form.setValue('status', 'draft')}
+                  onClick={() => {
+                    form.setValue('status', 'draft');
+                    form.handleSubmit(onSubmit)();
+                  }}
+                  disabled={isPending}
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Salvar Rascunho
                 </Button>
                 <Button
-                  type="submit"
+                  type="button"
+                  onClick={() => {
+                    form.setValue('status', 'published');
+                    form.handleSubmit(onSubmit)();
+                  }}
                   disabled={isPending}
-                  onClick={() => form.setValue('status', 'published')}
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Publicar
