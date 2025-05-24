@@ -1021,6 +1021,7 @@ export type Database = {
           portfolio_url: string | null
           position: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          status: string | null
           updated_at: string | null
           username: string | null
         }
@@ -1039,6 +1040,7 @@ export type Database = {
           portfolio_url?: string | null
           position?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          status?: string | null
           updated_at?: string | null
           username?: string | null
         }
@@ -1057,6 +1059,7 @@ export type Database = {
           portfolio_url?: string | null
           position?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          status?: string | null
           updated_at?: string | null
           username?: string | null
         }

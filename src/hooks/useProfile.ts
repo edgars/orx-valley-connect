@@ -21,7 +21,13 @@ export const useProfile = (userId?: string) => {
   return useQuery({
     queryKey: ['profile', userId],
     queryFn: async () => {
-      const targetId = userId || (await supabase.auth.getUser()).data.user?.id;
+      let targetId = userId;
+      
+      if (!targetId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        targetId = user?.id;
+      }
+      
       if (!targetId) throw new Error('Usuário não autenticado');
 
       const { data, error } = await supabase
@@ -33,7 +39,7 @@ export const useProfile = (userId?: string) => {
       if (error) throw error;
       return data;
     },
-    enabled: !!userId || !!supabase.auth.getUser()
+    enabled: !!userId || true
   });
 };
 
@@ -46,28 +52,40 @@ export const useUpdateProfile = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('Usuário não autenticado');
 
+      console.log('Atualizando perfil com:', updates);
+
       const { data, error } = await supabase
         .from('profiles')
-        .update(updates)
+        .update({
+          ...updates,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', user.id)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar perfil:', error);
+        throw error;
+      }
+      
+      console.log('Perfil atualizado com sucesso:', data);
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       queryClient.invalidateQueries({ queryKey: ['profile'] });
+      queryClient.invalidateQueries({ queryKey: ['users'] });
       toast({
         title: "Perfil atualizado!",
         description: "Suas informações foram salvas com sucesso.",
       });
     },
     onError: (error: any) => {
+      console.error('Erro na mutação:', error);
       toast({
         title: "Erro ao atualizar perfil",
-        description: error.message,
+        description: error.message || "Ocorreu um erro inesperado",
         variant: "destructive",
       });
     }

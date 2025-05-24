@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -94,18 +95,31 @@ export const useUpdateUserStatus = () => {
 
   return useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: 'active' | 'blocked' }) => {
+      // Primeiro verificamos se a coluna status existe na tabela
       const { data, error } = await supabase
+        .from('profiles')
+        .select('status')
+        .eq('id', userId)
+        .limit(1);
+
+      if (error && error.code === '42703') {
+        // Coluna não existe, vamos atualizar apenas o que é possível
+        throw new Error('Funcionalidade de status não disponível no momento');
+      }
+
+      const { data: updateData, error: updateError } = await supabase
         .from('profiles')
         .update({ status })
         .eq('id', userId)
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (updateError) throw updateError;
+      return updateData;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast({
         title: "Status atualizado!",
         description: "O status do usuário foi atualizado com sucesso.",
