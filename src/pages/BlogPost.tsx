@@ -1,4 +1,3 @@
-
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import Header from '@/components/Header';
@@ -10,12 +9,17 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useBlogPost, useBlogPostsByAuthor } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { ArrowLeft, Calendar, User, Clock, Tag } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Clock, Tag, ExternalLink } from 'lucide-react';
+import { useEffect } from 'react';
 
 const BlogPost = () => {
   const { slug } = useParams<{ slug: string }>();
   const { data: post, isLoading } = useBlogPost(slug!);
   const { data: authorPosts } = useBlogPostsByAuthor(post?.author_id || '');
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [slug]);
 
   if (isLoading) {
     return (
@@ -58,7 +62,7 @@ const BlogPost = () => {
             Voltar ao Blog
           </Link>
 
-          <article className="animate-fade-in">
+          <article className="animate-fade-in max-w-[45%] mx-auto">
             {post.featured_image_url && (
               <div className="aspect-video overflow-hidden rounded-lg mb-4 sm:mb-6 animate-scale-in">
                 <img
@@ -83,7 +87,6 @@ const BlogPost = () => {
                 {estimatedReadTime} min de leitura
               </div>
               
-              {/* Tags na mesma linha das informações de data/tempo */}
               {post.tags && post.tags.length > 0 && (
                 <div className="flex items-center gap-2">
                   <Tag className="w-4 h-4 text-gray-400" />
@@ -149,9 +152,20 @@ const BlogPost = () => {
                     <p className="text-gray-300 mb-2 sm:mb-3 text-sm sm:text-base">
                       <strong>{post.author?.full_name}</strong>
                     </p>
-                    <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-400">
-                      <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                      {authorPosts?.length || 0} {(authorPosts?.length || 0) === 1 ? 'post publicado' : 'posts publicados'}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-400">
+                      <div className="flex items-center gap-2">
+                        <User className="w-3 h-3 sm:w-4 sm:h-4" />
+                        {authorPosts?.length || 0} {(authorPosts?.length || 0) === 1 ? 'post publicado' : 'posts publicados'}
+                      </div>
+                      {authorPosts && authorPosts.length > 1 && (
+                        <Link 
+                          to={`/blog?author=${post.author_id}`}
+                          className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          <ExternalLink className="w-3 h-3 sm:w-4 sm:h-4" />
+                          Ver todos os posts
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </div>

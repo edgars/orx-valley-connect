@@ -1,3 +1,4 @@
+
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -14,8 +15,8 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
   const [suggestions, setSuggestions] = useState<Array<{ id: string; name: string; color: string }>>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const { data: allTags } = useBlogTags();
-  const { mutate: createTag } = useCreateBlogTag();
+  const { data: allTags, refetch: refetchTags } = useBlogTags();
+  const { mutate: createTag, isPending: isCreatingTag } = useCreateBlogTag();
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -51,7 +52,7 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
   };
 
   const createNewTag = () => {
-    if (!inputValue.trim()) return;
+    if (!inputValue.trim() || isCreatingTag) return;
     
     const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#06b6d4', '#3b82f6', '#8b5cf6', '#ec4899'];
     const randomColor = colors[Math.floor(Math.random() * colors.length)];
@@ -70,7 +71,19 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
       color: randomColor
     }, {
       onSuccess: (newTag) => {
+        // Immediately add the new tag to selected tags
         addTag(newTag);
+        // Refetch all tags to update the cache
+        refetchTags();
+        // Clear input and suggestions
+        setInputValue('');
+        setShowSuggestions(false);
+        setHighlightedIndex(-1);
+        inputRef.current?.focus();
+      },
+      onError: (error) => {
+        console.error('Error creating tag:', error);
+        // Don't clear input on error so user can try again
       }
     });
   };
@@ -82,7 +95,7 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
         addTag(suggestions[highlightedIndex]);
       } else if (suggestions.length > 0) {
         addTag(suggestions[0]);
-      } else if (inputValue.trim()) {
+      } else if (inputValue.trim() && !isCreatingTag) {
         createNewTag();
       }
     } else if (e.key === 'ArrowDown') {
@@ -105,12 +118,23 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
     }
   };
 
-  const handleBlur = () => {
-    setTimeout(() => {
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
-    }, 200);
+  const handleBlur = (e: React.FocusEvent) => {
+    // Only hide suggestions if the focus is not moving to a suggestion button
+    if (!e.relatedTarget || !e.relatedTarget.closest('[data-suggestion]')) {
+      setTimeout(() => {
+        setShowSuggestions(false);
+        setHighlightedIndex(-1);
+      }, 200);
+    }
   };
+
+  const exactMatch = allTags?.find(tag => 
+    tag.name.toLowerCase() === inputValue.toLowerCase()
+  );
+
+  const shouldShowCreateOption = inputValue.trim() && 
+    !exactMatch && 
+    !selectedTags.some(tag => tag.name.toLowerCase() === inputValue.toLowerCase());
 
   return (
     <div className="space-y-3">
@@ -124,19 +148,24 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
           onKeyDown={handleKeyDown}
           onBlur={handleBlur}
           onFocus={() => {
-            if (inputValue.trim() && suggestions.length > 0) {
+            if (inputValue.trim() && (suggestions.length > 0 || shouldShowCreateOption)) {
               setShowSuggestions(true);
             }
           }}
+          disabled={isCreatingTag}
           className="bg-gray-800 border-gray-700 text-white placeholder:text-gray-400 focus:border-blue-500 focus:ring-blue-500"
         />
         
-        {showSuggestions && suggestions.length > 0 && (
+        {showSuggestions && (suggestions.length > 0 || shouldShowCreateOption) && (
           <div className="absolute z-20 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-40 overflow-y-auto animate-fade-in">
             {suggestions.map((tag, index) => (
               <button
                 key={tag.id}
-                onClick={() => addTag(tag)}
+                data-suggestion
+                onClick={(e) => {
+                  e.preventDefault();
+                  addTag(tag);
+                }}
                 className={`w-full px-3 py-2 text-left flex items-center gap-2 transition-colors ${
                   index === highlightedIndex 
                     ? 'bg-gray-700' 
@@ -150,18 +179,23 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
                 <span className="text-white truncate">{tag.name}</span>
               </button>
             ))}
-          </div>
-        )}
-        
-        {inputValue.trim() && suggestions.length === 0 && showSuggestions && (
-          <div className="absolute z-20 w-full mt-1 bg-gray-800 border border-gray-700 rounded-md shadow-lg animate-fade-in">
-            <button
-              onClick={createNewTag}
-              className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-2 text-white transition-colors"
-            >
-              <Plus className="w-4 h-4 text-green-400" />
-              <span>Criar tag "{inputValue.trim()}"</span>
-            </button>
+            
+            {shouldShowCreateOption && (
+              <button
+                data-suggestion
+                onClick={(e) => {
+                  e.preventDefault();
+                  createNewTag();
+                }}
+                disabled={isCreatingTag}
+                className="w-full px-3 py-2 text-left hover:bg-gray-700 flex items-center gap-2 text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Plus className="w-4 h-4 text-green-400" />
+                <span>
+                  {isCreatingTag ? 'Criando...' : `Criar tag "${inputValue.trim()}"`}
+                </span>
+              </button>
+            )}
           </div>
         )}
       </div>

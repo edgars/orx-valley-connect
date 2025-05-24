@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -8,6 +7,7 @@ export interface UserProfile {
   full_name?: string;
   username?: string;
   role: 'usuario' | 'administrador';
+  status?: 'active' | 'blocked';
   bio?: string;
   location?: string;
   phone?: string;
@@ -81,6 +81,39 @@ export const useUpdateUserRole = () => {
     onError: (error: any) => {
       toast({
         title: "Erro ao atualizar perfil",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useUpdateUserStatus = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ userId, status }: { userId: string; status: 'active' | 'blocked' }) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ status })
+        .eq('id', userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      toast({
+        title: "Status atualizado!",
+        description: "O status do usuário foi atualizado com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar status",
         description: error.message,
         variant: "destructive",
       });
