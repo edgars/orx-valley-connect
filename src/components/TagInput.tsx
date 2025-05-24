@@ -178,12 +178,10 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
                 style={{ 
                   backgroundColor: tag.color + '20', 
                   color: tag.color, 
-                  borderColor: tag.color 
-                }}
-                className="border flex items-center gap-2 px-3 py-1 animate-scale-in hover:scale-105 transition-transform duration-200"
-                style={{
+                  borderColor: tag.color,
                   animationDelay: `${index * 50}ms`
                 }}
+                className="border flex items-center gap-2 px-3 py-1 animate-scale-in hover:scale-105 transition-transform duration-200"
               >
                 <div
                   className="w-2 h-2 rounded-full"

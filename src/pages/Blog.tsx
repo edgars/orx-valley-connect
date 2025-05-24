@@ -210,12 +210,10 @@ const Blog = () => {
                               style={{ 
                                 backgroundColor: tag.color + '20', 
                                 color: tag.color, 
-                                borderColor: tag.color 
-                              }}
-                              className="border hover:scale-110 transition-all duration-300 animate-fade-in"
-                              style={{
+                                borderColor: tag.color,
                                 animationDelay: `${index * 100}ms`
                               }}
+                              className="border hover:scale-110 transition-all duration-300 animate-fade-in"
                             >
                               <div
                                 className="w-2 h-2 rounded-full mr-1 animate-pulse"
@@ -311,12 +309,10 @@ const Blog = () => {
                               style={{ 
                                 backgroundColor: tag.color + '20', 
                                 color: tag.color, 
-                                borderColor: tag.color 
-                              }}
-                              className="text-xs border px-2 py-0.5 hover:scale-110 transition-all duration-300 animate-fade-in"
-                              style={{
+                                borderColor: tag.color,
                                 animationDelay: `${(cardIndex * 100) + (index * 50)}ms`
                               }}
+                              className="text-xs border px-2 py-0.5 hover:scale-110 transition-all duration-300 animate-fade-in"
                             >
                               <div
                                 className="w-1.5 h-1.5 rounded-full mr-1"

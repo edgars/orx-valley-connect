@@ -82,13 +82,11 @@ const BlogPost = () => {
                       style={{ 
                         backgroundColor: tag.color + '20', 
                         color: tag.color, 
-                        borderColor: tag.color + '60'
-                      }}
-                      className="border-2 px-3 py-1 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in hover:shadow-lg"
-                      style={{
+                        borderColor: tag.color + '60',
                         animationDelay: `${index * 100}ms`,
                         boxShadow: `0 0 10px ${tag.color}20`
                       }}
+                      className="border-2 px-3 py-1 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in hover:shadow-lg"
                     >
                       <div
                         className="w-2 h-2 rounded-full mr-2 animate-pulse"
