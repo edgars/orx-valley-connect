@@ -3,6 +3,7 @@ import Header from '@/components/Header';
 import HeroSection from '@/components/HeroSection';
 import EventsSection from '@/components/EventsSection';
 import CommunitySection from '@/components/CommunitySection';
+import SponsorsSection from '@/components/SponsorsSection';
 import Footer from '@/components/Footer';
 
 const Index = () => {
@@ -13,6 +14,7 @@ const Index = () => {
         <HeroSection />
         <EventsSection />
         <CommunitySection />
+        <SponsorsSection />
       </main>
       <Footer />
     </div>
