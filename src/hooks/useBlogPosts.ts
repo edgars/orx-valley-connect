@@ -106,7 +106,7 @@ export const useCreateBlogPost = () => {
 
       if (error) throw error;
 
-      // Corrigindo a inserção de tags - usando apenas IDs das tags como strings
+      // Fix: Use only tag IDs (strings) instead of full tag objects
       if (tags && tags.length > 0) {
         const tagInserts = tags.map(tagId => ({
           post_id: data.id,
