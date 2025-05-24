@@ -15,6 +15,7 @@ export interface Event {
   status: 'ativo' | 'cancelado' | 'finalizado';
   organizer_id: string;
   image_url?: string;
+  stream_url?: string;
   created_at: string;
   updated_at: string;
 }

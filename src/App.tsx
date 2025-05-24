@@ -11,6 +11,8 @@ import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Profile from "./pages/Profile";
 import EventManagement from "./pages/EventManagement";
+import Members from "./pages/Members";
+import MyEvents from "./pages/MyEvents";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +30,8 @@ const App = () => (
             <Route path="/admin" element={<Admin />} />
             <Route path="/perfil" element={<Profile />} />
             <Route path="/eventos/gerenciar" element={<EventManagement />} />
+            <Route path="/membros" element={<Members />} />
+            <Route path="/meus-eventos" element={<MyEvents />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -8,17 +8,37 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useIsAdmin } from '@/hooks/useUsers';
 
 const Header = () => {
   const { user, loading, signOut } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const isAdmin = useIsAdmin();
 
   const handleSignOut = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleNavigation = (hash: string) => {
+    // Se estiver numa página de administração, redireciona para home primeiro
+    const isAdminPage = location.pathname.includes('/admin') || location.pathname.includes('/eventos/gerenciar');
+    
+    if (isAdminPage) {
+      navigate('/' + hash);
+    } else {
+      // Se já estiver na home, apenas faz scroll
+      if (location.pathname === '/') {
+        const element = document.querySelector(hash);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth' });
+        }
+      } else {
+        navigate('/' + hash);
+      }
+    }
   };
 
   const getUserDisplayName = () => {
@@ -42,15 +62,40 @@ const Header = () => {
         </div>
 
         <nav className="hidden md:flex items-center space-x-8">
-          <a href="#eventos" className="text-muted-foreground hover:text-foreground transition-colors">
+          <button
+            onClick={() => handleNavigation('#eventos')}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             Eventos
-          </a>
-          <a href="#comunidade" className="text-muted-foreground hover:text-foreground transition-colors">
+          </button>
+          <button
+            onClick={() => handleNavigation('#comunidade')}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             Comunidade
-          </a>
-          <a href="#sobre" className="text-muted-foreground hover:text-foreground transition-colors">
+          </button>
+          <button
+            onClick={() => handleNavigation('#sobre')}
+            className="text-muted-foreground hover:text-foreground transition-colors"
+          >
             Sobre
-          </a>
+          </button>
+          {user && (
+            <>
+              <button
+                onClick={() => navigate('/membros')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Membros
+              </button>
+              <button
+                onClick={() => navigate('/meus-eventos')}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Meus Eventos
+              </button>
+            </>
+          )}
           {isAdmin && (
             <>
               <button
@@ -86,6 +131,12 @@ const Header = () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => navigate('/perfil')}>
                   Perfil
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/meus-eventos')}>
+                  Meus Eventos
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => navigate('/membros')}>
+                  Membros
                 </DropdownMenuItem>
                 {isAdmin && (
                   <>
