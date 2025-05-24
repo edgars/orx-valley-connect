@@ -4,9 +4,11 @@ import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { Menu, X, User, LogOut } from 'lucide-react';
+import AdminDropdown from './AdminDropdown';
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
 
@@ -53,25 +55,18 @@ const Header = () => {
               Comunidade
             </Link>
             <Link to="/blog" className="text-gray-300 hover:text-white transition-colors">
-              Sobre
+              Blog
             </Link>
             {user && (
               <>
-                <Link to="/membros" className="text-gray-300 hover:text-white transition-colors">
-                  Membros
-                </Link>
                 <Link to="/meus-eventos" className="text-gray-300 hover:text-white transition-colors">
                   Meus Eventos
                 </Link>
                 {isAdmin && (
-                  <>
-                    <Link to="/admin" className="text-gray-300 hover:text-white transition-colors">
-                      Admin
-                    </Link>
-                    <Link to="/eventos/gerenciar" className="text-gray-300 hover:text-white transition-colors">
-                      Gestão de Eventos
-                    </Link>
-                  </>
+                  <AdminDropdown 
+                    isOpen={isAdminDropdownOpen} 
+                    onToggle={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)} 
+                  />
                 )}
               </>
             )}
@@ -137,17 +132,10 @@ const Header = () => {
                 className="text-gray-300 hover:text-white transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
-                Sobre
+                Blog
               </Link>
               {user && (
                 <>
-                  <Link 
-                    to="/membros" 
-                    className="text-gray-300 hover:text-white transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Membros
-                  </Link>
                   <Link 
                     to="/meus-eventos" 
                     className="text-gray-300 hover:text-white transition-colors"
@@ -170,6 +158,13 @@ const Header = () => {
                         onClick={() => setIsMenuOpen(false)}
                       >
                         Gestão de Eventos
+                      </Link>
+                      <Link 
+                        to="/blog/gerenciar" 
+                        className="text-gray-300 hover:text-white transition-colors"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        Gerenciar Blog
                       </Link>
                     </>
                   )}

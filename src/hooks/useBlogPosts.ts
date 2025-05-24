@@ -1,3 +1,4 @@
+
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -202,6 +203,43 @@ export const useUpdateBlogPost = () => {
     onError: (error: any) => {
       toast({
         title: "Erro ao atualizar post",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useDeleteBlogPost = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (postId: string) => {
+      // Delete tags first
+      await supabase
+        .from('blog_post_tags')
+        .delete()
+        .eq('post_id', postId);
+
+      // Delete post
+      const { error } = await supabase
+        .from('blog_posts')
+        .delete()
+        .eq('id', postId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blog-posts'] });
+      toast({
+        title: "Post excluído com sucesso!",
+        description: "O post foi removido do blog.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao excluir post",
         description: error.message,
         variant: "destructive",
       });
