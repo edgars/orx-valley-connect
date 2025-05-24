@@ -16,6 +16,8 @@ import MyEvents from "./pages/MyEvents";
 import Blog from "./pages/Blog";
 import BlogPost from "./pages/BlogPost";
 import BlogManagement from "./pages/BlogManagement";
+import CreateBlogPost from "./pages/CreateBlogPost";
+import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +40,8 @@ const App = () => (
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/blog/gerenciar" element={<BlogManagement />} />
+            <Route path="/blog/criar" element={<CreateBlogPost />} />
+            <Route path="/blog/editar/:id" element={<EditBlogPost />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

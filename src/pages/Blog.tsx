@@ -6,10 +6,11 @@ import Footer from '@/components/Footer';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useBlogPosts } from '@/hooks/useBlogPosts';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Search, Calendar, User } from 'lucide-react';
+import { Search, Calendar, User, Clock } from 'lucide-react';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -31,6 +32,10 @@ const Blog = () => {
       </div>
     );
   }
+
+  const estimateReadTime = (content: string) => {
+    return Math.ceil(content.split(' ').length / 200);
+  };
 
   return (
     <div className="min-h-screen">
@@ -55,17 +60,17 @@ const Blog = () => {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredPosts.map((post) => (
-            <Card key={post.id} className="hover:shadow-lg transition-shadow">
+            <Card key={post.id} className="hover:shadow-lg transition-shadow group">
               {post.featured_image_url && (
                 <div className="aspect-video overflow-hidden rounded-t-lg">
                   <img
                     src={post.featured_image_url}
                     alt={post.title}
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
                 </div>
               )}
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <div className="flex flex-wrap gap-2 mb-2">
                   {post.tags?.map((tag) => (
                     <Badge
@@ -77,7 +82,7 @@ const Blog = () => {
                     </Badge>
                   ))}
                 </div>
-                <CardTitle className="line-clamp-2">
+                <CardTitle className="line-clamp-2 leading-tight">
                   <Link
                     to={`/blog/${post.slug}`}
                     className="hover:text-blue-600 transition-colors"
@@ -86,18 +91,35 @@ const Blog = () => {
                   </Link>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4 line-clamp-3">
+              <CardContent className="pt-0">
+                <p className="text-gray-600 mb-4 line-clamp-3 text-sm">
                   {post.excerpt}
                 </p>
-                <div className="flex items-center justify-between text-sm text-gray-500">
+                
+                {/* Author Info */}
+                <div className="flex items-center gap-3 mb-3 pb-3 border-b">
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage src={post.author?.avatar_url} />
+                    <AvatarFallback>
+                      {post.author?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900 truncate">
+                      {post.author?.full_name}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Meta Information */}
+                <div className="flex items-center justify-between text-xs text-gray-500">
                   <div className="flex items-center gap-1">
-                    <User className="w-4 h-4" />
-                    {post.author?.full_name}
+                    <Calendar className="w-3 h-3" />
+                    {post.published_at && format(new Date(post.published_at), 'dd/MM/yyyy', { locale: ptBR })}
                   </div>
                   <div className="flex items-center gap-1">
-                    <Calendar className="w-4 h-4" />
-                    {post.published_at && format(new Date(post.published_at), 'dd/MM/yyyy', { locale: ptBR })}
+                    <Clock className="w-3 h-3" />
+                    {estimateReadTime(post.content)} min
                   </div>
                 </div>
               </CardContent>
