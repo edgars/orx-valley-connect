@@ -21,7 +21,7 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center text-white">Carregando...</div>
         </div>
         <Footer />
@@ -33,7 +33,7 @@ const BlogPost = () => {
     return (
       <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="w-full px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <h1 className="text-xl sm:text-2xl font-bold mb-4 text-white">Post não encontrado</h1>
             <Link to="/blog">
@@ -51,8 +51,8 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       <Header />
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="max-w-4xl mx-auto">
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="w-full max-w-none">
           <Link to="/blog" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4 sm:mb-6 transition-colors text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Blog
@@ -69,37 +69,6 @@ const BlogPost = () => {
               </div>
             )}
 
-            {/* Tags Section with Animation */}
-            {post.tags && post.tags.length > 0 && (
-              <div className="mb-4 sm:mb-6">
-                <div className="flex items-center gap-2 mb-3">
-                  <Tag className="w-4 h-4 text-gray-400" />
-                  <span className="text-sm text-gray-400">Tags:</span>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag, index) => (
-                    <Badge
-                      key={tag.id}
-                      style={{ 
-                        backgroundColor: tag.color + '20', 
-                        color: tag.color, 
-                        borderColor: tag.color + '60',
-                        animationDelay: `${index * 100}ms`,
-                        boxShadow: `0 0 10px ${tag.color}20`
-                      }}
-                      className="border-2 px-2 sm:px-3 py-1 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in hover:shadow-lg text-xs sm:text-sm"
-                    >
-                      <div
-                        className="w-2 h-2 rounded-full mr-1 sm:mr-2 animate-pulse"
-                        style={{ backgroundColor: tag.color }}
-                      />
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 text-white animate-fade-in leading-tight" style={{ animationDelay: '200ms' }}>
               {post.title}
             </h1>
@@ -113,6 +82,33 @@ const BlogPost = () => {
                 <Clock className="w-4 h-4" />
                 {estimatedReadTime} min de leitura
               </div>
+              
+              {/* Tags na mesma linha das informações de data/tempo */}
+              {post.tags && post.tags.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <Tag className="w-4 h-4 text-gray-400" />
+                  <div className="flex flex-wrap gap-1">
+                    {post.tags.map((tag, index) => (
+                      <Badge
+                        key={tag.id}
+                        style={{ 
+                          backgroundColor: tag.color + '20', 
+                          color: tag.color, 
+                          borderColor: tag.color + '60',
+                          animationDelay: `${index * 100}ms`
+                        }}
+                        className="border px-2 py-0.5 hover:scale-110 transition-all duration-300 cursor-pointer animate-fade-in text-xs"
+                      >
+                        <div
+                          className="w-1.5 h-1.5 rounded-full mr-1 animate-pulse"
+                          style={{ backgroundColor: tag.color }}
+                        />
+                        {tag.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             {post.excerpt && (
@@ -166,10 +162,10 @@ const BlogPost = () => {
             {authorPosts && authorPosts.length > 1 && (
               <div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
                 <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Mais posts de {post.author?.full_name}</h3>
-                <div className="grid gap-4 sm:gap-6 md:grid-cols-2">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
                   {authorPosts
                     .filter(p => p.id !== post.id)
-                    .slice(0, 4)
+                    .slice(0, 6)
                     .map((relatedPost, index) => (
                       <Card 
                         key={relatedPost.id} 

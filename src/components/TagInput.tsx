@@ -1,4 +1,3 @@
-
 import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -71,7 +70,6 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
       color: randomColor
     }, {
       onSuccess: (newTag) => {
-        // Apenas adicionar a tag, não navegar
         addTag(newTag);
       }
     });
@@ -108,7 +106,6 @@ const TagInput = ({ selectedTags, onTagsChange }: TagInputProps) => {
   };
 
   const handleBlur = () => {
-    // Delay hiding suggestions to allow for click events
     setTimeout(() => {
       setShowSuggestions(false);
       setHighlightedIndex(-1);
