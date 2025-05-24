@@ -7,6 +7,7 @@ import * as z from 'zod';
 import MDEditor from '@uiw/react-md-editor';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import TagInput from '@/components/TagInput';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,9 +15,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useCreateBlogPost } from '@/hooks/useBlogPosts';
-import { useBlogTags } from '@/hooks/useBlogTags';
 import { useAuth } from '@/contexts/AuthContext';
-import { Calendar, Save, Eye } from 'lucide-react';
+import { Save, Eye } from 'lucide-react';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -24,7 +24,6 @@ const formSchema = z.object({
   slug: z.string().min(1, 'Slug é obrigatório'),
   featured_image_url: z.string().url().optional().or(z.literal('')),
   status: z.enum(['draft', 'published', 'archived']),
-  tags: z.array(z.string()).optional()
 });
 
 type FormData = z.infer<typeof formSchema>;
@@ -33,8 +32,8 @@ const CreateBlogPost = () => {
   const navigate = useNavigate();
   const { user, profile } = useAuth();
   const { mutate: createPost, isPending } = useCreateBlogPost();
-  const { data: tags } = useBlogTags();
   const [content, setContent] = useState('');
+  const [selectedTags, setSelectedTags] = useState<Array<{ id: string; name: string; color: string }>>([]);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -44,18 +43,17 @@ const CreateBlogPost = () => {
       slug: '',
       featured_image_url: '',
       status: 'draft',
-      tags: []
     }
   });
 
   if (!user || profile?.role !== 'administrador') {
     return (
-      <div className="min-h-screen">
+      <div className="min-h-screen bg-gray-900">
         <Header />
         <div className="container mx-auto px-4 py-8">
           <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Acesso Negado</h1>
-            <p>Você não tem permissão para criar posts.</p>
+            <h1 className="text-2xl font-bold mb-4 text-white">Acesso Negado</h1>
+            <p className="text-gray-300">Você não tem permissão para criar posts.</p>
           </div>
         </div>
         <Footer />
@@ -74,8 +72,6 @@ const CreateBlogPost = () => {
   };
 
   const onSubmit = (data: FormData) => {
-    const selectedTags = tags?.filter(tag => data.tags?.includes(tag.id)) || [];
-    
     createPost({
       title: data.title,
       content,
@@ -99,14 +95,18 @@ const CreateBlogPost = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-900">
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold">Criar Novo Post</h1>
+            <h1 className="text-3xl font-bold text-white">Criar Novo Post</h1>
             <div className="flex gap-2">
-              <Button variant="outline" onClick={() => navigate('/blog/gerenciar')}>
+              <Button 
+                variant="outline" 
+                onClick={() => navigate('/blog/gerenciar')}
+                className="border-gray-600 text-gray-300 hover:bg-gray-800"
+              >
                 Cancelar
               </Button>
             </div>
@@ -114,9 +114,9 @@ const CreateBlogPost = () => {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              <Card>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle>Informações Básicas</CardTitle>
+                  <CardTitle className="text-white">Informações Básicas</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <FormField
@@ -124,7 +124,7 @@ const CreateBlogPost = () => {
                     name="title"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Título</FormLabel>
+                        <FormLabel className="text-gray-300">Título</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="Digite o título do post..."
@@ -135,6 +135,7 @@ const CreateBlogPost = () => {
                                 form.setValue('slug', generateSlug(e.target.value));
                               }
                             }}
+                            className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
                           />
                         </FormControl>
                         <FormMessage />
@@ -147,9 +148,13 @@ const CreateBlogPost = () => {
                     name="slug"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Slug (URL)</FormLabel>
+                        <FormLabel className="text-gray-300">Slug (URL)</FormLabel>
                         <FormControl>
-                          <Input placeholder="slug-do-post" {...field} />
+                          <Input 
+                            placeholder="slug-do-post" 
+                            {...field} 
+                            className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -161,12 +166,13 @@ const CreateBlogPost = () => {
                     name="excerpt"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Resumo</FormLabel>
+                        <FormLabel className="text-gray-300">Resumo</FormLabel>
                         <FormControl>
                           <Textarea 
                             placeholder="Breve resumo do post..."
                             rows={3}
                             {...field}
+                            className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
                           />
                         </FormControl>
                         <FormMessage />
@@ -179,11 +185,12 @@ const CreateBlogPost = () => {
                     name="featured_image_url"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>URL da Imagem de Capa</FormLabel>
+                        <FormLabel className="text-gray-300">URL da Imagem de Capa</FormLabel>
                         <FormControl>
                           <Input 
                             placeholder="https://exemplo.com/imagem.jpg"
                             {...field}
+                            className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
                           />
                         </FormControl>
                         <FormMessage />
@@ -197,17 +204,17 @@ const CreateBlogPost = () => {
                       name="status"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Status</FormLabel>
+                          <FormLabel className="text-gray-300">Status</FormLabel>
                           <Select onValueChange={field.onChange} defaultValue={field.value}>
                             <FormControl>
-                              <SelectTrigger>
+                              <SelectTrigger className="bg-gray-900 border-gray-700 text-white">
                                 <SelectValue placeholder="Selecione o status" />
                               </SelectTrigger>
                             </FormControl>
-                            <SelectContent>
-                              <SelectItem value="draft">Rascunho</SelectItem>
-                              <SelectItem value="published">Publicado</SelectItem>
-                              <SelectItem value="archived">Arquivado</SelectItem>
+                            <SelectContent className="bg-gray-800 border-gray-700">
+                              <SelectItem value="draft" className="text-white hover:bg-gray-700">Rascunho</SelectItem>
+                              <SelectItem value="published" className="text-white hover:bg-gray-700">Publicado</SelectItem>
+                              <SelectItem value="archived" className="text-white hover:bg-gray-700">Arquivado</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -215,69 +222,20 @@ const CreateBlogPost = () => {
                       )}
                     />
 
-                    <FormField
-                      control={form.control}
-                      name="tags"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Tags</FormLabel>
-                          <Select onValueChange={(value) => {
-                            const currentTags = field.value || [];
-                            if (!currentTags.includes(value)) {
-                              field.onChange([...currentTags, value]);
-                            }
-                          }}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Selecione tags" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {tags?.map((tag) => (
-                                <SelectItem key={tag.id} value={tag.id}>
-                                  {tag.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-
-                  {form.watch('tags')?.length > 0 && (
-                    <div className="flex flex-wrap gap-2">
-                      {form.watch('tags')?.map((tagId) => {
-                        const tag = tags?.find(t => t.id === tagId);
-                        return tag ? (
-                          <span
-                            key={tag.id}
-                            className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium"
-                            style={{ backgroundColor: tag.color + '20', color: tag.color }}
-                          >
-                            {tag.name}
-                            <button
-                              type="button"
-                              onClick={() => {
-                                const currentTags = form.getValues('tags') || [];
-                                form.setValue('tags', currentTags.filter(id => id !== tagId));
-                              }}
-                              className="ml-1 hover:text-red-500"
-                            >
-                              ×
-                            </button>
-                          </span>
-                        ) : null;
-                      })}
+                    <div>
+                      <label className="text-sm font-medium text-gray-300 mb-2 block">Tags</label>
+                      <TagInput
+                        selectedTags={selectedTags}
+                        onTagsChange={setSelectedTags}
+                      />
                     </div>
-                  )}
+                  </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="bg-gray-800 border-gray-700">
                 <CardHeader>
-                  <CardTitle>Conteúdo</CardTitle>
+                  <CardTitle className="text-white">Conteúdo</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <MDEditor
@@ -285,7 +243,7 @@ const CreateBlogPost = () => {
                     onChange={(val) => setContent(val || '')}
                     preview="edit"
                     height={500}
-                    data-color-mode="light"
+                    data-color-mode="dark"
                   />
                 </CardContent>
               </Card>
@@ -299,6 +257,7 @@ const CreateBlogPost = () => {
                     form.handleSubmit(onSubmit)();
                   }}
                   disabled={isPending}
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
                 >
                   <Save className="w-4 h-4 mr-2" />
                   Salvar Rascunho
@@ -310,6 +269,7 @@ const CreateBlogPost = () => {
                     form.handleSubmit(onSubmit)();
                   }}
                   disabled={isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Eye className="w-4 h-4 mr-2" />
                   Publicar
