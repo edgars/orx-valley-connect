@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
-import UserManagementCard from '@/components/UserManagementCard';
+import UserManagementList from '@/components/UserManagementList';
 import SponsorManagementCard from '@/components/SponsorManagementCard';
 import StatsCards from '@/components/StatsCards';
 
@@ -31,7 +31,7 @@ const Admin = () => {
           </TabsList>
           
           <TabsContent value="users">
-            <UserManagementCard />
+            <UserManagementList />
           </TabsContent>
           
           <TabsContent value="sponsors">

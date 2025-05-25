@@ -1,7 +1,6 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
-import { useEventRegistrations } from '@/hooks/useEventRegistrations';
+import { useUserEventRegistrations, useCheckEventRegistration } from '@/hooks/useEventRegistrations';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -19,31 +18,94 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: events, isLoading: eventsLoading } = useEvents();
-  const { 
-    data: registrations, 
-    registerForEvent, 
-    unregisterFromEvent,
-    isLoading: registrationLoading 
-  } = useEventRegistrations();
+  const { data: userRegistrations, isLoading: registrationLoading } = useUserEventRegistrations();
+  const { data: isRegistered } = useCheckEventRegistration(id || '');
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const event = events?.find(e => e.id === id);
-  const isRegistered = registrations?.some(r => r.event_id === id);
   const canRegister = event && event.current_participants < (event.max_participants || Infinity);
+
+  const registerMutation = useMutation({
+    mutationFn: async ({ eventId }: { eventId: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { data, error } = await supabase
+        .from('event_registrations')
+        .insert([{ event_id: eventId, user_id: user.id }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast({
+        title: "Inscrição realizada!",
+        description: "Você foi inscrito no evento com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro na inscrição",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const unregisterMutation = useMutation({
+    mutationFn: async ({ eventId }: { eventId: string }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Usuário não autenticado');
+
+      const { error } = await supabase
+        .from('event_registrations')
+        .delete()
+        .eq('event_id', eventId)
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      toast({
+        title: "Inscrição cancelada!",
+        description: "Sua inscrição foi cancelada com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao cancelar inscrição",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   const handleRegistration = async () => {
     if (!user || !event) return;
 
     try {
       if (isRegistered) {
-        await unregisterFromEvent.mutateAsync({ eventId: event.id });
+        await unregisterMutation.mutateAsync({ eventId: event.id });
       } else {
-        await registerForEvent.mutateAsync({ eventId: event.id });
+        await registerMutation.mutateAsync({ eventId: event.id });
       }
     } catch (error) {
       console.error('Registration error:', error);
@@ -117,6 +179,7 @@ const EventDetails = () => {
 
   const eventDate = new Date(event.date_time);
   const isEventPast = eventDate < new Date();
+  const isMutating = registerMutation.isPending || unregisterMutation.isPending;
 
   return (
     <div className="min-h-screen bg-background">
@@ -256,11 +319,11 @@ const EventDetails = () => {
                     {!isEventPast && event.status === 'ativo' && (
                       <Button
                         onClick={handleRegistration}
-                        disabled={registrationLoading || (!isRegistered && !canRegister)}
+                        disabled={isMutating || (!isRegistered && !canRegister)}
                         className="w-full"
                         variant={isRegistered ? "outline" : "default"}
                       >
-                        {registrationLoading
+                        {isMutating
                           ? "Processando..."
                           : isRegistered
                           ? "Cancelar Inscrição"
