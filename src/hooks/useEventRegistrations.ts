@@ -26,6 +26,7 @@ export const useUserEventRegistrations = () => {
             status,
             organizer_id,
             image_url,
+            stream_url,
             created_at,
             updated_at
           ),
@@ -52,7 +53,7 @@ export const useEventRegistrations = (eventId: string) => {
           *,
           profiles (
             full_name,
-            email
+            phone
           )
         `)
         .eq('event_id', eventId)
@@ -116,7 +117,7 @@ export const useUpdateAttendance = () => {
   });
 };
 
-export const useEventRegistrations = () => {
+export const useEventRegistrationMutations = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
