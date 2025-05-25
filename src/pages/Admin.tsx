@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
 import UserManagementCard from '@/components/UserManagementCard';
+import SponsorManagementCard from '@/components/SponsorManagementCard';
 import StatsCards from '@/components/StatsCards';
 
 const Admin = () => {
@@ -23,13 +24,18 @@ const Admin = () => {
         <StatsCards />
         
         <Tabs defaultValue="users" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users">Gestão de Usuários</TabsTrigger>
+            <TabsTrigger value="sponsors">Gestão de Apoiadores</TabsTrigger>
             <TabsTrigger value="content">Gestão de Conteúdo</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users">
             <UserManagementCard />
+          </TabsContent>
+          
+          <TabsContent value="sponsors">
+            <SponsorManagementCard />
           </TabsContent>
           
           <TabsContent value="content">
