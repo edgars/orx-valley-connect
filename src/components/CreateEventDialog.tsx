@@ -185,7 +185,7 @@ const CreateEventDialog = ({ open, onClose }: CreateEventDialogProps) => {
                   onChange={(val) => setFormData(prev => ({ ...prev, description: val || '' }))}
                   preview="edit"
                   hideToolbar={false}
-                  visibleDragBar={false}
+                  visibleDragbar={false}
                   height={400}
                   data-color-mode="light"
                 />
