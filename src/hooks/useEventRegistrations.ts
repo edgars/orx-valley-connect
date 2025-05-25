@@ -28,6 +28,9 @@ export const useUserEventRegistrations = () => {
             image_url,
             created_at,
             updated_at
+          ),
+          profiles (
+            full_name
           )
         `)
         .eq('user_id', user.id)
@@ -36,6 +39,29 @@ export const useUserEventRegistrations = () => {
       if (error) throw error;
       return data;
     }
+  });
+};
+
+export const useEventRegistrations = (eventId: string) => {
+  return useQuery({
+    queryKey: ['event-registrations', eventId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('event_registrations')
+        .select(`
+          *,
+          profiles (
+            full_name,
+            email
+          )
+        `)
+        .eq('event_id', eventId)
+        .order('registered_at', { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!eventId
   });
 };
 
@@ -57,6 +83,36 @@ export const useCheckEventRegistration = (eventId: string) => {
       return !!data;
     },
     enabled: !!eventId
+  });
+};
+
+export const useUpdateAttendance = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async ({ registrationId, attended }: { registrationId: string; attended: boolean }) => {
+      const { data, error } = await supabase
+        .from('event_registrations')
+        .update({ attended })
+        .eq('id', registrationId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+      queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar presença",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
   });
 };
 

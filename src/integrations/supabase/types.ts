@@ -732,18 +732,21 @@ export type Database = {
       }
       event_registrations: {
         Row: {
+          attended: boolean | null
           event_id: string
           id: string
           registered_at: string | null
           user_id: string
         }
         Insert: {
+          attended?: boolean | null
           event_id: string
           id?: string
           registered_at?: string | null
           user_id: string
         }
         Update: {
+          attended?: boolean | null
           event_id?: string
           id?: string
           registered_at?: string | null
@@ -771,6 +774,7 @@ export type Database = {
           max_participants: number | null
           organizer_id: string
           status: Database["public"]["Enums"]["event_status"] | null
+          stream_url: string | null
           title: string
           type: Database["public"]["Enums"]["event_type"]
           updated_at: string | null
@@ -786,6 +790,7 @@ export type Database = {
           max_participants?: number | null
           organizer_id: string
           status?: Database["public"]["Enums"]["event_status"] | null
+          stream_url?: string | null
           title: string
           type?: Database["public"]["Enums"]["event_type"]
           updated_at?: string | null
@@ -801,6 +806,7 @@ export type Database = {
           max_participants?: number | null
           organizer_id?: string
           status?: Database["public"]["Enums"]["event_status"] | null
+          stream_url?: string | null
           title?: string
           type?: Database["public"]["Enums"]["event_type"]
           updated_at?: string | null

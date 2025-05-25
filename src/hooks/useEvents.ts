@@ -36,6 +36,23 @@ export const useEvents = () => {
   });
 };
 
+export const useEvent = (id: string) => {
+  return useQuery({
+    queryKey: ['event', id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data as Event;
+    },
+    enabled: !!id
+  });
+};
+
 export const useCreateEvent = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -67,6 +84,41 @@ export const useCreateEvent = () => {
     onError: (error: any) => {
       toast({
         title: "Erro ao criar evento",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useUpdateEvent = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (eventData: Partial<Event> & { id: string }) => {
+      const { id, ...updateData } = eventData;
+      const { data, error } = await supabase
+        .from('events')
+        .update(updateData)
+        .eq('id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event'] });
+      toast({
+        title: "Evento atualizado com sucesso!",
+        description: "As informações do evento foram atualizadas.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao atualizar evento",
         description: error.message,
         variant: "destructive",
       });
