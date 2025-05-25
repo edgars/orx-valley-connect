@@ -51,7 +51,7 @@ const EventCard = ({ event }: EventCardProps) => {
 
   const generateCalendarEvent = () => {
     const startDate = new Date(event.date_time);
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000); // 2 horas depois
+    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
     
     const formatDateForCalendar = (date: Date) => {
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -96,6 +96,20 @@ const EventCard = ({ event }: EventCardProps) => {
     }
   };
 
+  // Remove markdown formatting for preview
+  const getPlainTextPreview = (markdown: string) => {
+    return markdown
+      .replace(/#{1,6}\s/g, '') // Remove headers
+      .replace(/\*\*(.*?)\*\*/g, '$1') // Remove bold
+      .replace(/\*(.*?)\*/g, '$1') // Remove italic
+      .replace(/\[(.*?)\]\(.*?\)/g, '$1') // Remove links
+      .replace(/`(.*?)`/g, '$1') // Remove code
+      .replace(/^\s*[-*+]\s/gm, '') // Remove list markers
+      .replace(/^\s*\d+\.\s/gm, '') // Remove ordered list markers
+      .replace(/\n+/g, ' ') // Replace newlines with spaces
+      .trim();
+  };
+
   const spotsLeft = event.max_participants ? event.max_participants - event.current_participants : null;
   const isFull = spotsLeft === 0;
   const eventDate = new Date(event.date_time);
@@ -126,7 +140,7 @@ const EventCard = ({ event }: EventCardProps) => {
           {event.title}
         </h3>
         <p className="text-sm text-muted-foreground line-clamp-3">
-          {event.description}
+          {getPlainTextPreview(event.description)}
         </p>
       </CardHeader>
       

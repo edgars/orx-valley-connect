@@ -1,3 +1,4 @@
+
 import { useParams, useNavigate } from 'react-router-dom';
 import { useEvents } from '@/hooks/useEvents';
 import { useUserEventRegistrations, useCheckEventRegistration } from '@/hooks/useEventRegistrations';
@@ -6,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
+import ReactMarkdown from 'react-markdown';
 import { 
   Calendar, 
   MapPin, 
@@ -248,11 +250,27 @@ const EventDetails = () => {
                   </div>
                 </div>
 
-                <div className="prose max-w-none">
+                <div className="prose prose-sm max-w-none">
                   <h3>Sobre o evento</h3>
-                  <p className="text-muted-foreground whitespace-pre-wrap">
-                    {event.description}
-                  </p>
+                  <div className="markdown-content">
+                    <ReactMarkdown
+                      components={{
+                        h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-4 text-foreground">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-xl font-bold mt-5 mb-3 text-foreground">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-lg font-bold mt-4 mb-2 text-foreground">{children}</h3>,
+                        p: ({ children }) => <p className="mb-4 leading-relaxed text-muted-foreground">{children}</p>,
+                        ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
+                        ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
+                        li: ({ children }) => <li className="text-muted-foreground">{children}</li>,
+                        a: ({ children, href }) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
+                        code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>,
+                        pre: ({ children }) => <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">{children}</pre>,
+                        blockquote: ({ children }) => <blockquote className="border-l-4 border-primary pl-4 italic my-4 text-muted-foreground">{children}</blockquote>,
+                      }}
+                    >
+                      {event.description}
+                    </ReactMarkdown>
+                  </div>
                 </div>
               </CardContent>
             </Card>
