@@ -29,9 +29,6 @@ export const useUserEventRegistrations = () => {
             stream_url,
             created_at,
             updated_at
-          ),
-          profiles (
-            full_name
           )
         `)
         .eq('user_id', user.id)
@@ -51,7 +48,7 @@ export const useEventRegistrations = (eventId: string) => {
         .from('event_registrations')
         .select(`
           *,
-          profiles (
+          profiles!event_registrations_user_id_fkey (
             full_name,
             phone
           )

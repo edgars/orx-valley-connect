@@ -3,12 +3,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useUserEventRegistrations } from '@/hooks/useEventRegistrations';
+import { useAuth } from '@/contexts/AuthContext';
 import { Award, Download, Calendar, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 const MemberCertificates = () => {
   const { data: registrations, isLoading } = useUserEventRegistrations();
+  const { user } = useAuth();
 
   const attendedEvents = registrations?.filter(reg => 
     reg.attended && reg.events?.status === 'finalizado'
@@ -141,7 +143,7 @@ const MemberCertificates = () => {
                     onClick={() => generateCertificate(
                       event.title, 
                       event.date_time, 
-                      registration.profiles?.full_name || 'Participante'
+                      user?.email || 'Participante'
                     )}
                     className="ml-4"
                   >
