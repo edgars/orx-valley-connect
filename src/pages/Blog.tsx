@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Header from '@/components/Header';
@@ -13,7 +14,7 @@ import { useBlogTags } from '@/hooks/useBlogTags';
 import { useMembers } from '@/hooks/useMembers';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Search, Calendar, Clock, ArrowRight, Filter, X, Tag } from 'lucide-react';
+import { Search, Calendar, Clock, ArrowRight, X } from 'lucide-react';
 
 const Blog = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -89,13 +90,13 @@ const Blog = () => {
     <div className="min-h-screen bg-gray-900">
       <Header />
       
-      <main className="pt-24">
+      <main className="pt-20 sm:pt-24">
         {/* Hero Section */}
-        <section className="bg-gradient-to-r from-blue-700 to-purple-700 text-white py-16">
+        <section className="bg-gradient-to-r from-blue-700 to-purple-700 text-white py-12 sm:py-16">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <h1 className="text-5xl font-bold mb-6">Artigos Recentes</h1>
-              <p className="text-xl text-blue-100 mb-8">
+              <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold mb-4 sm:mb-6">Artigos Recentes</h1>
+              <p className="text-base sm:text-lg lg:text-xl text-blue-100 mb-6 sm:mb-8 leading-relaxed">
                 Aqui você encontra todos os artigos e tutoriais publicados no blog. Navegue pelos conteúdos
                 sobre desenvolvimento web, programação, design e tecnologias emergentes.
               </p>
@@ -103,12 +104,12 @@ const Blog = () => {
           </div>
         </section>
 
-        <div className="container mx-auto px-4 py-12">
+        <div className="container mx-auto px-4 py-8 sm:py-12">
           {/* Filters Section */}
-          <div className="mb-8 space-y-4">
-            <div className="flex flex-col md:flex-row gap-4">
+          <div className="mb-6 sm:mb-8 space-y-4">
+            <div className="flex flex-col gap-4">
               {/* Search */}
-              <div className="flex-1 relative">
+              <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                 <Input
                   placeholder="Pesquisar artigos..."
@@ -118,66 +119,69 @@ const Blog = () => {
                 />
               </div>
 
-              {/* Author Filter */}
-              <Select value={selectedAuthor} onValueChange={setSelectedAuthor}>
-                <SelectTrigger className="w-full md:w-48 bg-gray-800 border-gray-700 text-white">
-                  <SelectValue placeholder="Filtrar por autor" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  {authors.map((author) => (
-                    <SelectItem key={author.id} value={author.id} className="text-white hover:bg-gray-700">
-                      {author.full_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              {/* Filters Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {/* Author Filter */}
+                <Select value={selectedAuthor} onValueChange={setSelectedAuthor}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Filtrar por autor" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {authors.map((author) => (
+                      <SelectItem key={author.id} value={author.id} className="text-white hover:bg-gray-700">
+                        {author.full_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              {/* Tag Filter */}
-              <Select value={selectedTag} onValueChange={setSelectedTag}>
-                <SelectTrigger className="w-full md:w-48 bg-gray-800 border-gray-700 text-white">
-                  <SelectValue placeholder="Filtrar por tag" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  {tags?.map((tag) => (
-                    <SelectItem key={tag.id} value={tag.id} className="text-white hover:bg-gray-700">
-                      <span className="flex items-center gap-2">
-                        <div
-                          className="w-3 h-3 rounded-full"
-                          style={{ backgroundColor: tag.color }}
-                        />
-                        {tag.name}
-                      </span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                {/* Tag Filter */}
+                <Select value={selectedTag} onValueChange={setSelectedTag}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Filtrar por tag" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    {tags?.map((tag) => (
+                      <SelectItem key={tag.id} value={tag.id} className="text-white hover:bg-gray-700">
+                        <span className="flex items-center gap-2">
+                          <div
+                            className="w-3 h-3 rounded-full"
+                            style={{ backgroundColor: tag.color }}
+                          />
+                          {tag.name}
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-              {/* Date Filter */}
-              <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
-                <SelectTrigger className="w-full md:w-48 bg-gray-800 border-gray-700 text-white">
-                  <SelectValue placeholder="Filtrar por data" />
-                </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
-                  <SelectItem value="last-week" className="text-white hover:bg-gray-700">Última semana</SelectItem>
-                  <SelectItem value="last-month" className="text-white hover:bg-gray-700">Último mês</SelectItem>
-                  <SelectItem value="last-3-months" className="text-white hover:bg-gray-700">Últimos 3 meses</SelectItem>
-                </SelectContent>
-              </Select>
+                {/* Date Filter */}
+                <Select value={selectedDateRange} onValueChange={setSelectedDateRange}>
+                  <SelectTrigger className="bg-gray-800 border-gray-700 text-white">
+                    <SelectValue placeholder="Filtrar por data" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-gray-800 border-gray-700">
+                    <SelectItem value="last-week" className="text-white hover:bg-gray-700">Última semana</SelectItem>
+                    <SelectItem value="last-month" className="text-white hover:bg-gray-700">Último mês</SelectItem>
+                    <SelectItem value="last-3-months" className="text-white hover:bg-gray-700">Últimos 3 meses</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             {/* Clear Filters */}
             {hasActiveFilters && (
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-2">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={clearFilters}
-                  className="border-gray-600 text-gray-300 hover:bg-gray-800"
+                  className="border-gray-600 text-gray-300 hover:bg-gray-800 w-full sm:w-auto"
                 >
                   <X className="w-4 h-4 mr-2" />
                   Limpar filtros
                 </Button>
-                <span className="text-gray-400 text-sm">
+                <span className="text-gray-400 text-sm text-center sm:text-left">
                   {filteredPosts.length} {filteredPosts.length === 1 ? 'artigo encontrado' : 'artigos encontrados'}
                 </span>
               </div>
@@ -186,20 +190,20 @@ const Blog = () => {
 
           {/* Featured Post */}
           {featuredPost && !hasActiveFilters && (
-            <section className="mb-16">
-              <h2 className="text-2xl font-bold mb-8 text-white">Post em Destaque</h2>
+            <section className="mb-12 sm:mb-16">
+              <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-white">Post em Destaque</h2>
               <Card className="overflow-hidden hover:shadow-xl transition-shadow bg-gray-800 border-gray-700">
-                <div className="md:flex">
+                <div className="flex flex-col lg:flex-row">
                   {featuredPost.featured_image_url && (
-                    <div className="md:w-1/2">
+                    <div className="lg:w-1/2">
                       <img
                         src={featuredPost.featured_image_url}
                         alt={featuredPost.title}
-                        className="w-full h-64 md:h-full object-cover hover:scale-105 transition-transform duration-500"
+                        className="w-full h-64 lg:h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
                     </div>
                   )}
-                  <div className={`${featuredPost.featured_image_url ? 'md:w-1/2' : 'w-full'} p-8`}>
+                  <div className={`${featuredPost.featured_image_url ? 'lg:w-1/2' : 'w-full'} p-6 sm:p-8`}>
                     {/* Tags in Featured Post */}
                     {featuredPost.tags && featuredPost.tags.length > 0 && (
                       <div className="mb-4">
@@ -226,7 +230,7 @@ const Blog = () => {
                       </div>
                     )}
                     
-                    <h3 className="text-3xl font-bold mb-4 text-white">
+                    <h3 className="text-2xl sm:text-3xl font-bold mb-4 text-white leading-tight">
                       <Link
                         to={`/blog/${featuredPost.slug}`}
                         className="hover:text-blue-400 transition-colors"
@@ -235,24 +239,24 @@ const Blog = () => {
                       </Link>
                     </h3>
                     
-                    <p className="text-gray-300 mb-6 text-lg leading-relaxed">
+                    <p className="text-gray-300 mb-6 text-base sm:text-lg leading-relaxed">
                       {featuredPost.excerpt}
                     </p>
                     
                     {/* Author and Meta */}
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                       <div className="flex items-center gap-3">
-                        <Avatar>
+                        <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                           <AvatarImage src={featuredPost.author?.avatar_url} />
                           <AvatarFallback className="bg-gray-700 text-white">
                             {featuredPost.author?.full_name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'A'}
                           </AvatarFallback>
                         </Avatar>
-                        <div>
-                          <p className="font-medium text-white">
+                        <div className="min-w-0">
+                          <p className="font-medium text-white truncate">
                             {featuredPost.author?.full_name}
                           </p>
-                          <div className="flex items-center gap-4 text-sm text-gray-400">
+                          <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm text-gray-400">
                             <span className="flex items-center gap-1">
                               <Calendar className="w-4 h-4" />
                               {featuredPost.published_at && format(new Date(featuredPost.published_at), 'dd/MM/yyyy', { locale: ptBR })}
@@ -267,7 +271,7 @@ const Blog = () => {
                       
                       <Link
                         to={`/blog/${featuredPost.slug}`}
-                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                        className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 font-medium transition-colors self-start sm:self-auto"
                       >
                         Ler mais
                         <ArrowRight className="w-4 h-4" />
@@ -281,11 +285,11 @@ const Blog = () => {
 
           {/* Posts Grid */}
           <section>
-            <h2 className="text-2xl font-bold mb-8 text-white">
+            <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-white">
               {hasActiveFilters ? 'Resultados da Pesquisa' : 'Todos os Artigos'}
             </h2>
             
-            <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:gap-8 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
               {(hasActiveFilters ? filteredPosts : recentPosts).map((post, cardIndex) => (
                 <Card key={post.id} className="overflow-hidden hover:shadow-xl transition-all duration-300 bg-gray-800 border-gray-700 group hover:scale-105 animate-fade-in" style={{ animationDelay: `${cardIndex * 100}ms` }}>
                   {post.featured_image_url && (
@@ -328,7 +332,7 @@ const Blog = () => {
                       </div>
                     )}
                     
-                    <h3 className="text-xl font-bold leading-tight text-white">
+                    <h3 className="text-lg sm:text-xl font-bold leading-tight text-white">
                       <Link
                         to={`/blog/${post.slug}`}
                         className="hover:text-blue-400 transition-colors line-clamp-2"

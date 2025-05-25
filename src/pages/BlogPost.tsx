@@ -1,3 +1,4 @@
+
 import { useParams, Link } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import Header from '@/components/Header';
@@ -55,14 +56,14 @@ const BlogPost = () => {
   return (
     <div className="min-h-screen bg-gray-900">
       <Header />
-      <main className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
-        <div className="w-full max-w-none">
+      <main className="w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-8 pt-20 sm:pt-24">
+        <div className="w-full max-w-4xl mx-auto">
           <Link to="/blog" className="inline-flex items-center gap-2 text-blue-400 hover:text-blue-300 mb-4 sm:mb-6 transition-colors text-sm sm:text-base">
             <ArrowLeft className="w-4 h-4" />
             Voltar ao Blog
           </Link>
 
-          <article className="animate-fade-in max-w-[45%] mx-auto">
+          <article className="animate-fade-in">
             {post.featured_image_url && (
               <div className="aspect-video overflow-hidden rounded-lg mb-4 sm:mb-6 animate-scale-in">
                 <img
@@ -88,8 +89,8 @@ const BlogPost = () => {
               </div>
               
               {post.tags && post.tags.length > 0 && (
-                <div className="flex items-center gap-2">
-                  <Tag className="w-4 h-4 text-gray-400" />
+                <div className="flex items-start gap-2 flex-wrap">
+                  <Tag className="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" />
                   <div className="flex flex-wrap gap-1">
                     {post.tags.map((tag, index) => (
                       <Badge
@@ -123,14 +124,18 @@ const BlogPost = () => {
             <div className="prose prose-sm sm:prose-lg max-w-none mb-8 sm:mb-12 text-gray-300 animate-fade-in" style={{ animationDelay: '500ms' }}>
               <ReactMarkdown
                 components={{
-                  h1: ({ children }) => <h1 className="text-2xl sm:text-3xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4 text-white">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-xl sm:text-2xl font-bold mt-4 sm:mt-6 mb-2 sm:mb-3 text-white">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-lg sm:text-xl font-bold mt-3 sm:mt-4 mb-2 text-white">{children}</h3>,
+                  h1: ({ children }) => <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4 text-white">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-lg sm:text-xl lg:text-2xl font-bold mt-4 sm:mt-6 mb-2 sm:mb-3 text-white">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-base sm:text-lg lg:text-xl font-bold mt-3 sm:mt-4 mb-2 text-white">{children}</h3>,
                   p: ({ children }) => <p className="mb-4 leading-relaxed text-gray-300 text-sm sm:text-base">{children}</p>,
-                  a: ({ children, href }) => <a href={href} className="text-blue-400 hover:text-blue-300 transition-colors">{children}</a>,
-                  code: ({ children }) => <code className="bg-gray-800 px-1 py-0.5 rounded text-xs sm:text-sm text-gray-300">{children}</code>,
+                  a: ({ children, href }) => <a href={href} className="text-blue-400 hover:text-blue-300 transition-colors break-words">{children}</a>,
+                  code: ({ children }) => <code className="bg-gray-800 px-1 py-0.5 rounded text-xs sm:text-sm text-gray-300 break-words">{children}</code>,
                   pre: ({ children }) => <pre className="bg-gray-800 p-3 sm:p-4 rounded-lg overflow-x-auto mb-4 text-gray-300 text-xs sm:text-sm">{children}</pre>,
                   blockquote: ({ children }) => <blockquote className="border-l-4 border-blue-500 pl-3 sm:pl-4 italic my-4 text-gray-400 text-sm sm:text-base">{children}</blockquote>,
+                  img: ({ src, alt }) => <img src={src} alt={alt} className="w-full h-auto rounded-lg my-4" />,
+                  ul: ({ children }) => <ul className="list-disc pl-4 sm:pl-6 mb-4 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-4 sm:pl-6 mb-4 space-y-1">{children}</ol>,
+                  li: ({ children }) => <li className="text-sm sm:text-base">{children}</li>,
                 }}
               >
                 {post.content}
@@ -176,7 +181,7 @@ const BlogPost = () => {
             {authorPosts && authorPosts.length > 1 && (
               <div className="animate-fade-in" style={{ animationDelay: '700ms' }}>
                 <h3 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-white">Mais posts de {post.author?.full_name}</h3>
-                <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3">
                   {authorPosts
                     .filter(p => p.id !== post.id)
                     .slice(0, 6)
