@@ -47,8 +47,12 @@ export const useEventRegistrations = (eventId: string) => {
       const { data, error } = await supabase
         .from('event_registrations')
         .select(`
-          *,
-          profiles!event_registrations_user_id_fkey (
+          id,
+          event_id,
+          user_id,
+          registered_at,
+          attended,
+          profiles (
             full_name,
             phone
           )
