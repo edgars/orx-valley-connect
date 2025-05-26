@@ -12,7 +12,6 @@ const MemberCertificates = () => {
   const { data: registrations, isLoading } = useUserEventRegistrations();
   const { user } = useAuth();
 
-  // Filtrar apenas eventos onde o usuário esteve presente
   const attendedEvents = registrations?.filter(reg => 
     reg.attended && reg.events?.status === 'finalizado'
   ) || [];
@@ -61,7 +60,7 @@ const MemberCertificates = () => {
 
     // Organization
     ctx.font = '18px Arial';
-    ctx.fillText('ORX Valley Community', canvas.width / 2, 480);
+    ctx.fillText('ORX Community', canvas.width / 2, 480);
 
     // Download
     const link = document.createElement('a');
@@ -97,7 +96,7 @@ const MemberCertificates = () => {
         </CardHeader>
         <CardContent>
           <p className="text-muted-foreground">
-            Você ainda não possui certificados disponíveis. Participe de eventos e sua presença seja confirmada para gerar certificados.
+            Você ainda não possui certificados disponíveis. Participe de eventos e sua presença será registrada para gerar certificados.
           </p>
         </CardContent>
       </Card>
@@ -109,7 +108,7 @@ const MemberCertificates = () => {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Award className="w-5 h-5" />
-          Meus Certificados ({attendedEvents.length})
+          Meus Certificados
         </CardTitle>
       </CardHeader>
       <CardContent>

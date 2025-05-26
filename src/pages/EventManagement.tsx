@@ -6,12 +6,12 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useAllEvents } from '@/hooks/useEvents';
+import { useEvents } from '@/hooks/useEvents';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
 import CreateEventDialog from '@/components/CreateEventDialog';
 import EditEventDialog from '@/components/EditEventDialog';
-import AttendanceTable from '@/components/AttendanceTable';
+import AttendanceList from '@/components/AttendanceList';
 import CertificateGenerator from '@/components/CertificateGenerator';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -20,7 +20,7 @@ import { Calendar, MapPin, Users, Plus, Award, Edit, UserCheck } from 'lucide-re
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
-  const { data: events, isLoading } = useAllEvents();
+  const { data: events, isLoading } = useEvents();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -143,17 +143,19 @@ const EventManagement = () => {
                         <Edit className="w-4 h-4" />
                       </Button>
                       
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedEvent(event);
-                          setShowAttendanceDialog(true);
-                        }}
-                      >
-                        <UserCheck className="w-4 h-4 mr-1" />
-                        Presença
-                      </Button>
+                      {event.type === 'presencial' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowAttendanceDialog(true);
+                          }}
+                        >
+                          <UserCheck className="w-4 h-4 mr-1" />
+                          Presença
+                        </Button>
+                      )}
                       
                       {event.status === 'finalizado' && (
                         <Button
@@ -186,7 +188,7 @@ const EventManagement = () => {
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span>
-                        {event.current_participants || 0}
+                        {event.current_participants}
                         {event.max_participants && `/${event.max_participants}`} participantes
                       </span>
                     </div>
@@ -244,11 +246,11 @@ const EventManagement = () => {
           />
 
           <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
-            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Lista de Presença - {selectedEvent.title}</DialogTitle>
               </DialogHeader>
-              <AttendanceTable event={selectedEvent} />
+              <AttendanceList event={selectedEvent} />
             </DialogContent>
           </Dialog>
 

@@ -16,7 +16,6 @@ export interface Event {
   organizer_id: string;
   image_url?: string;
   stream_url?: string;
-  allows_certificates?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -24,36 +23,6 @@ export interface Event {
 export const useEvents = () => {
   return useQuery({
     queryKey: ['events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('date_time', { ascending: true });
-      
-      if (error) throw error;
-      return data as Event[];
-    }
-  });
-};
-
-export const useAllEvents = () => {
-  return useQuery({
-    queryKey: ['all-events'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('events')
-        .select('*')
-        .order('date_time', { ascending: false });
-      
-      if (error) throw error;
-      return data as Event[];
-    }
-  });
-};
-
-export const useActiveEvents = () => {
-  return useQuery({
-    queryKey: ['active-events'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('events')
@@ -97,8 +66,7 @@ export const useCreateEvent = () => {
         .from('events')
         .insert({
           ...eventData,
-          organizer_id: user.id,
-          current_participants: 0
+          organizer_id: user.id
         })
         .select()
         .single();
@@ -108,8 +76,6 @@ export const useCreateEvent = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['all-events'] });
-      queryClient.invalidateQueries({ queryKey: ['active-events'] });
       toast({
         title: "Evento criado com sucesso!",
         description: "O evento foi adicionado à lista de eventos.",
@@ -144,8 +110,6 @@ export const useUpdateEvent = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['all-events'] });
-      queryClient.invalidateQueries({ queryKey: ['active-events'] });
       queryClient.invalidateQueries({ queryKey: ['event'] });
       toast({
         title: "Evento atualizado com sucesso!",
@@ -175,8 +139,7 @@ export const useRegisterForEvent = () => {
         .from('event_registrations')
         .insert({
           event_id: eventId,
-          user_id: user.id,
-          attended: false
+          user_id: user.id
         });
 
       if (error) throw error;
@@ -184,8 +147,6 @@ export const useRegisterForEvent = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
-      queryClient.invalidateQueries({ queryKey: ['all-events'] });
-      queryClient.invalidateQueries({ queryKey: ['active-events'] });
       toast({
         title: "Inscrição realizada!",
         description: "Você foi inscrito no evento com sucesso.",
