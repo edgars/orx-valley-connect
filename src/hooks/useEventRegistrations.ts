@@ -44,6 +44,8 @@ export const useEventRegistrations = (eventId: string) => {
   return useQuery({
     queryKey: ['event-registrations', eventId],
     queryFn: async () => {
+      console.log('Fetching registrations for event:', eventId);
+      
       const { data, error } = await supabase
         .from('event_registrations')
         .select(`
@@ -54,13 +56,19 @@ export const useEventRegistrations = (eventId: string) => {
           attended,
           profiles (
             full_name,
-            phone
+            phone,
+            username
           )
         `)
         .eq('event_id', eventId)
         .order('registered_at', { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching event registrations:', error);
+        throw error;
+      }
+      
+      console.log('Event registrations data:', data);
       return data;
     },
     enabled: !!eventId
@@ -140,6 +148,7 @@ export const useEventRegistrationMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
       toast({
         title: "Inscrição realizada!",
         description: "Você foi inscrito no evento com sucesso.",
@@ -171,6 +180,7 @@ export const useEventRegistrationMutations = () => {
       queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
       toast({
         title: "Inscrição cancelada!",
         description: "Sua inscrição foi cancelada com sucesso.",
