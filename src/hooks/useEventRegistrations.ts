@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -46,30 +45,46 @@ export const useEventRegistrations = (eventId: string) => {
     queryFn: async () => {
       console.log('Fetching registrations for event:', eventId);
       
-      const { data, error } = await supabase
+      // First get the registrations
+      const { data: registrations, error: registrationsError } = await supabase
         .from('event_registrations')
-        .select(`
-          id,
-          event_id,
-          user_id,
-          registered_at,
-          attended,
-          profiles!inner (
-            full_name,
-            phone,
-            username
-          )
-        `)
+        .select('*')
         .eq('event_id', eventId)
         .order('registered_at', { ascending: true });
 
-      if (error) {
-        console.error('Error fetching event registrations:', error);
-        throw error;
+      if (registrationsError) {
+        console.error('Error fetching event registrations:', registrationsError);
+        throw registrationsError;
       }
-      
-      console.log('Event registrations data:', data);
-      return data;
+
+      if (!registrations || registrations.length === 0) {
+        console.log('No registrations found');
+        return [];
+      }
+
+      // Then get the profile data for each registration
+      const userIds = registrations.map(reg => reg.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone, username')
+        .in('id', userIds);
+
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      // Combine the data
+      const combinedData = registrations.map(registration => {
+        const profile = profiles?.find(p => p.id === registration.user_id);
+        return {
+          ...registration,
+          profiles: profile || null
+        };
+      });
+
+      console.log('Combined registrations data:', combinedData);
+      return combinedData;
     },
     enabled: !!eventId
   });
