@@ -764,6 +764,7 @@ export type Database = {
       }
       events: {
         Row: {
+          allows_certificates: boolean | null
           created_at: string | null
           current_participants: number | null
           date_time: string
@@ -780,6 +781,7 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          allows_certificates?: boolean | null
           created_at?: string | null
           current_participants?: number | null
           date_time: string
@@ -796,6 +798,7 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          allows_certificates?: boolean | null
           created_at?: string | null
           current_participants?: number | null
           date_time?: string

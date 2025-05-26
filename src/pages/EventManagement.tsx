@@ -11,7 +11,7 @@ import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
 import CreateEventDialog from '@/components/CreateEventDialog';
 import EditEventDialog from '@/components/EditEventDialog';
-import AttendanceList from '@/components/AttendanceList';
+import AttendanceTable from '@/components/AttendanceTable';
 import CertificateGenerator from '@/components/CertificateGenerator';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
@@ -143,19 +143,17 @@ const EventManagement = () => {
                         <Edit className="w-4 h-4" />
                       </Button>
                       
-                      {event.type === 'presencial' && (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedEvent(event);
-                            setShowAttendanceDialog(true);
-                          }}
-                        >
-                          <UserCheck className="w-4 h-4 mr-1" />
-                          Presença
-                        </Button>
-                      )}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setShowAttendanceDialog(true);
+                        }}
+                      >
+                        <UserCheck className="w-4 h-4 mr-1" />
+                        Presença
+                      </Button>
                       
                       {event.status === 'finalizado' && (
                         <Button
@@ -246,11 +244,11 @@ const EventManagement = () => {
           />
 
           <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Lista de Presença - {selectedEvent.title}</DialogTitle>
+                <DialogTitle>Lista de Presença</DialogTitle>
               </DialogHeader>
-              <AttendanceList event={selectedEvent} />
+              <AttendanceTable event={selectedEvent} />
             </DialogContent>
           </Dialog>
 

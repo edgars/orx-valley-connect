@@ -64,25 +64,33 @@ export const useUpdateUserRole = () => {
     mutationFn: async ({ userId, role }: { userId: string; role: 'usuario' | 'administrador' }) => {
       const { data, error } = await supabase
         .from('profiles')
-        .update({ role })
+        .update({ 
+          role,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId)
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Erro ao atualizar role:', error);
+        throw error;
+      }
       return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast({
         title: "Perfil atualizado!",
-        description: "O perfil do usuário foi atualizado com sucesso.",
+        description: `O usuário agora é ${data.role === 'administrador' ? 'administrador' : 'usuário'}.`,
       });
     },
     onError: (error: any) => {
+      console.error('Erro na mutação:', error);
       toast({
         title: "Erro ao atualizar perfil",
-        description: error.message,
+        description: error.message || "Ocorreu um erro inesperado",
         variant: "destructive",
       });
     }
@@ -95,40 +103,35 @@ export const useUpdateUserStatus = () => {
 
   return useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: 'active' | 'blocked' }) => {
-      // Primeiro verificamos se a coluna status existe na tabela
       const { data, error } = await supabase
         .from('profiles')
-        .select('status')
-        .eq('id', userId)
-        .limit(1);
-
-      if (error && error.code === '42703') {
-        // Coluna não existe, vamos atualizar apenas o que é possível
-        throw new Error('Funcionalidade de status não disponível no momento');
-      }
-
-      const { data: updateData, error: updateError } = await supabase
-        .from('profiles')
-        .update({ status })
+        .update({ 
+          status,
+          updated_at: new Date().toISOString()
+        })
         .eq('id', userId)
         .select()
         .single();
 
-      if (updateError) throw updateError;
-      return updateData;
+      if (error) {
+        console.error('Erro ao atualizar status:', error);
+        throw error;
+      }
+      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['users'] });
       queryClient.invalidateQueries({ queryKey: ['current-user'] });
       toast({
         title: "Status atualizado!",
-        description: "O status do usuário foi atualizado com sucesso.",
+        description: `O usuário está agora ${data.status === 'active' ? 'ativo' : 'bloqueado'}.`,
       });
     },
     onError: (error: any) => {
+      console.error('Erro na mutação de status:', error);
       toast({
         title: "Erro ao atualizar status",
-        description: error.message,
+        description: error.message || "Ocorreu um erro inesperado",
         variant: "destructive",
       });
     }
