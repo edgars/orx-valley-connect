@@ -52,7 +52,7 @@ export const useEventRegistrations = (eventId: string) => {
           user_id,
           registered_at,
           attended,
-          profiles (
+          profiles!event_registrations_user_id_fkey (
             full_name,
             phone
           )
