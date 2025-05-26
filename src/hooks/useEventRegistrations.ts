@@ -54,7 +54,7 @@ export const useEventRegistrations = (eventId: string) => {
           user_id,
           registered_at,
           attended,
-          profiles (
+          profiles!inner (
             full_name,
             phone,
             username
