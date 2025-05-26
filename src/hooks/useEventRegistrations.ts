@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -44,24 +43,38 @@ export const useEventRegistrations = (eventId: string) => {
   return useQuery({
     queryKey: ['event-registrations', eventId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get the registrations
+      const { data: registrations, error: regError } = await supabase
         .from('event_registrations')
-        .select(`
-          id,
-          event_id,
-          user_id,
-          registered_at,
-          attended,
-          profiles (
-            full_name,
-            phone
-          )
-        `)
+        .select('*')
         .eq('event_id', eventId)
         .order('registered_at', { ascending: true });
 
-      if (error) throw error;
-      return data;
+      if (regError) throw regError;
+
+      // Then get the profiles for each registration
+      if (!registrations || registrations.length === 0) {
+        return [];
+      }
+
+      const userIds = registrations.map(reg => reg.user_id);
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, full_name, phone')
+        .in('id', userIds);
+
+      if (profileError) throw profileError;
+
+      // Combine the data
+      const combinedData = registrations.map(registration => {
+        const profile = profiles?.find(p => p.id === registration.user_id);
+        return {
+          ...registration,
+          profiles: profile || { full_name: 'Nome não disponível', phone: null }
+        };
+      });
+
+      return combinedData;
     },
     enabled: !!eventId
   });
