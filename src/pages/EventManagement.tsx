@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useEvents } from '@/hooks/useEvents';
+import { useAllEvents } from '@/hooks/useEvents';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
 import CreateEventDialog from '@/components/CreateEventDialog';
@@ -20,7 +20,7 @@ import { Calendar, MapPin, Users, Plus, Award, Edit, UserCheck } from 'lucide-re
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
-  const { data: events, isLoading } = useEvents();
+  const { data: events, isLoading } = useAllEvents();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -186,7 +186,7 @@ const EventManagement = () => {
                     <div className="flex items-center gap-2">
                       <Users className="w-4 h-4 text-muted-foreground" />
                       <span>
-                        {event.current_participants}
+                        {event.current_participants || 0}
                         {event.max_participants && `/${event.max_participants}`} participantes
                       </span>
                     </div>
@@ -246,7 +246,7 @@ const EventManagement = () => {
           <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
             <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Lista de Presença</DialogTitle>
+                <DialogTitle>Lista de Presença - {selectedEvent.title}</DialogTitle>
               </DialogHeader>
               <AttendanceTable event={selectedEvent} />
             </DialogContent>
