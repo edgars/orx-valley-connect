@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,16 +7,21 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useSponsors, useCreateSponsor, Sponsor, SponsorFormData } from '@/hooks/useSponsors';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useSponsors, useCreateSponsor, useUpdateSponsor, useDeleteSponsor, Sponsor, SponsorFormData } from '@/hooks/useSponsors';
 import { Loader2, Plus, Edit, Trash2, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const SponsorManagementCard = () => {
   const { data: sponsors, isLoading } = useSponsors();
   const createSponsorMutation = useCreateSponsor();
+  const updateSponsorMutation = useUpdateSponsor();
+  const deleteSponsorMutation = useDeleteSponsor();
   const { toast } = useToast();
   
   const [isCreating, setIsCreating] = useState(false);
+  const [editingSponsor, setEditingSponsor] = useState<Sponsor | null>(null);
+  const [deletingSponsor, setDeletingSponsor] = useState<Sponsor | null>(null);
   const [formData, setFormData] = useState<SponsorFormData>({
     name: '',
     logo_url: '',
@@ -26,6 +30,17 @@ const SponsorManagementCard = () => {
     tier: 'bronze',
     display_order: 0
   });
+
+  const resetForm = () => {
+    setFormData({
+      name: '',
+      logo_url: '',
+      website_url: '',
+      description: '',
+      tier: 'bronze',
+      display_order: 0
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,19 +54,72 @@ const SponsorManagementCard = () => {
     }
 
     try {
-      await createSponsorMutation.mutateAsync(formData);
-      setFormData({
-        name: '',
-        logo_url: '',
-        website_url: '',
-        description: '',
-        tier: 'bronze',
-        display_order: 0
-      });
-      setIsCreating(false);
+      if (editingSponsor) {
+        await updateSponsorMutation.mutateAsync({
+          id: editingSponsor.id,
+          data: formData
+        });
+        setEditingSponsor(null);
+        toast({
+          title: "Sucesso",
+          description: "Apoiador atualizado com sucesso",
+        });
+      } else {
+        await createSponsorMutation.mutateAsync(formData);
+        setIsCreating(false);
+        toast({
+          title: "Sucesso",
+          description: "Apoiador criado com sucesso",
+        });
+      }
+      resetForm();
     } catch (error) {
-      console.error('Error creating sponsor:', error);
+      console.error('Error saving sponsor:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao salvar apoiador",
+        variant: "destructive",
+      });
     }
+  };
+
+  const handleEdit = (sponsor: Sponsor) => {
+    setFormData({
+      name: sponsor.name,
+      logo_url: sponsor.logo_url,
+      website_url: sponsor.website_url || '',
+      description: sponsor.description || '',
+      tier: sponsor.tier,
+      display_order: sponsor.display_order
+    });
+    setEditingSponsor(sponsor);
+    setIsCreating(false);
+  };
+
+  const handleDelete = async () => {
+    if (!deletingSponsor) return;
+    
+    try {
+      await deleteSponsorMutation.mutateAsync(deletingSponsor.id);
+      setDeletingSponsor(null);
+      toast({
+        title: "Sucesso",
+        description: "Apoiador excluído com sucesso",
+      });
+    } catch (error) {
+      console.error('Error deleting sponsor:', error);
+      toast({
+        title: "Erro",
+        description: "Erro ao excluir apoiador",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCancel = () => {
+    setIsCreating(false);
+    setEditingSponsor(null);
+    resetForm();
   };
 
   const tierColors = {
@@ -90,14 +158,26 @@ const SponsorManagementCard = () => {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Gestão de Apoiadores</CardTitle>
-          <Button onClick={() => setIsCreating(!isCreating)}>
+          <Button 
+            onClick={() => {
+              setIsCreating(!isCreating);
+              setEditingSponsor(null);
+              resetForm();
+            }}
+          >
             <Plus className="h-4 w-4 mr-2" />
             Adicionar Apoiador
           </Button>
         </CardHeader>
         <CardContent>
-          {isCreating && (
+          {(isCreating || editingSponsor) && (
             <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg">
+              <div className="flex justify-between items-center">
+                <h3 className="text-lg font-semibold">
+                  {editingSponsor ? 'Editar Apoiador' : 'Novo Apoiador'}
+                </h3>
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Nome *</Label>
@@ -110,7 +190,7 @@ const SponsorManagementCard = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tier">Categoria</Label>
+                  <Label htmlFor="tier">Categoria hhhh</Label>
                   <Select value={formData.tier} onValueChange={(value: any) => setFormData({ ...formData, tier: value })}>
                     <SelectTrigger>
                       <SelectValue />
@@ -172,11 +252,16 @@ const SponsorManagementCard = () => {
               </div>
               
               <div className="flex gap-2">
-                <Button type="submit" disabled={createSponsorMutation.isPending}>
-                  {createSponsorMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Salvar
+                <Button 
+                  type="submit" 
+                  disabled={createSponsorMutation.isPending || updateSponsorMutation.isPending}
+                >
+                  {(createSponsorMutation.isPending || updateSponsorMutation.isPending) && 
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  }
+                  {editingSponsor ? 'Atualizar' : 'Salvar'}
                 </Button>
-                <Button type="button" variant="outline" onClick={() => setIsCreating(false)}>
+                <Button type="button" variant="outline" onClick={handleCancel}>
                   Cancelar
                 </Button>
               </div>
@@ -203,6 +288,9 @@ const SponsorManagementCard = () => {
                         src={sponsor.logo_url}
                         alt={sponsor.name}
                         className="h-8 w-auto object-contain"
+                        onError={(e) => {
+                          e.currentTarget.src = '/placeholder-logo.png';
+                        }}
                       />
                     </TableCell>
                     <TableCell className="font-medium">{sponsor.name}</TableCell>
@@ -227,10 +315,20 @@ const SponsorManagementCard = () => {
                     <TableCell>{sponsor.display_order}</TableCell>
                     <TableCell>
                       <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => handleEdit(sponsor)}
+                          disabled={updateSponsorMutation.isPending}
+                        >
                           <Edit className="h-3 w-3" />
                         </Button>
-                        <Button size="sm" variant="outline">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => setDeletingSponsor(sponsor)}
+                          disabled={deleteSponsorMutation.isPending}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
@@ -249,6 +347,36 @@ const SponsorManagementCard = () => {
           </div>
         </CardContent>
       </Card>
+
+      {/* Modal de Confirmação de Exclusão */}
+      <Dialog open={!!deletingSponsor} onOpenChange={() => setDeletingSponsor(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirmar Exclusão</DialogTitle>
+            <DialogDescription>
+              Tem certeza que deseja excluir o apoiador "{deletingSponsor?.name}"? 
+              Esta ação não pode ser desfeita.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button 
+              variant="outline" 
+              onClick={() => setDeletingSponsor(null)}
+              disabled={deleteSponsorMutation.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button 
+              variant="destructive" 
+              onClick={handleDelete}
+              disabled={deleteSponsorMutation.isPending}
+            >
+              {deleteSponsorMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Excluir
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

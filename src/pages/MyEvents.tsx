@@ -2,6 +2,7 @@
 import { useUserEventRegistrations } from '@/hooks/useEventRegistrations';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
+import Footer from '@/components/Footer';
 import EventCard from '@/components/EventCard';
 import { Card, CardContent } from '@/components/ui/card';
 import { Navigate } from 'react-router-dom';
@@ -32,6 +33,7 @@ const MyEvents = () => {
           <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
           <p>Carregando seus eventos...</p>
         </div>
+        <Footer />
       </div>
     );
   }

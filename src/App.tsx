@@ -37,7 +37,7 @@ const App = () => (
             <Route path="/perfil" element={<Profile />} />
             <Route path="/eventos/gerenciar" element={<EventManagement />} />
             <Route path="/eventos/:id" element={<EventDetails />} />
-            <Route path="/membros" element={<Members />} />
+            <Route path="/Comunidade" element={<Members />} />
             <Route path="/meus-eventos" element={<MyEvents />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/blog/:slug" element={<BlogPost />} />

@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { useMembers } from '@/hooks/useMembers';
 import { useAuth } from '@/contexts/AuthContext';
+import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import MemberCard from '@/components/MemberCard';
 import { Input } from '@/components/ui/input';
@@ -18,8 +19,20 @@ const Members = () => {
   if (!user) {
     return <Navigate to="/auth" replace />;
   }
+    if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900">
+        <Header />
+        <div className="container mx-auto px-4 py-8 pt-24">
+          <div className="text-center text-white">Carregando...</div>
+        </div>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
+    
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container py-8">
@@ -82,6 +95,7 @@ const Members = () => {
           </Card>
         )}
       </div>
+      <Footer />
     </div>
   );
 };
