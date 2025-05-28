@@ -21,12 +21,12 @@ const AdminDropdown = ({ isOpen, onToggle }: AdminDropdownProps) => {
   return (
     <DropdownMenu open={isOpen} onOpenChange={onToggle}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="text-white hover:bg-gray-800 flex items-center gap-1">
+        <Button variant="ghost" className="text-white hover:bg-gray-800  flex items-center gap-1">
           Admin
           <ChevronDown className="w-4 h-4" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-56" align="end">
+      <DropdownMenuContent className="w-56 bg-gray-800 " align="end">
         <DropdownMenuLabel>Painel Administrativo</DropdownMenuLabel>
         <DropdownMenuSeparator />
         
@@ -38,7 +38,7 @@ const AdminDropdown = ({ isOpen, onToggle }: AdminDropdownProps) => {
         </DropdownMenuItem>
         
         <DropdownMenuItem asChild>
-          <Link to="/membros" className="flex items-center gap-2 w-full">
+          <Link to="/Comunidade" className="flex items-center gap-2 w-full">
             <Users className="w-4 h-4" />
             Membros
           </Link>

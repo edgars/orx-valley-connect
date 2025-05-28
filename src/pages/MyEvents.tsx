@@ -5,11 +5,11 @@ import { Button } from '@/components/ui/button';
 import { useUserEventRegistrations } from '@/hooks/useEventRegistrations';
 import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
-import MemberCertificates from '@/components/MemberCertificates';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, MapPin, Users, Award, Globe, Eye } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Footer from '@/components/Footer';
 
 const MyEvents = () => {
   const { user } = useAuth();
@@ -41,6 +41,7 @@ const MyEvents = () => {
           <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
           <p>Carregando seus eventos...</p>
         </div>
+        <Footer />
       </div>
     );
   }
@@ -60,8 +61,7 @@ const MyEvents = () => {
         <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
         
         <div className="grid gap-8">
-          {/* Certificados */}
-          <MemberCertificates />
+
 
           {/* Próximos Eventos */}
           <Card>
