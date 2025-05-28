@@ -20,6 +20,8 @@ import BlogManagement from "./pages/BlogManagement";
 import CreateBlogPost from "./pages/CreateBlogPost";
 import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
+import CertificateGenerator from "./components/CertificateGenerator";
+import CertificateGeneratorPage from "./pages/certificados";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +46,7 @@ const App = () => (
             <Route path="/blog/gerenciar" element={<BlogManagement />} />
             <Route path="/blog/criar" element={<CreateBlogPost />} />
             <Route path="/blog/editar/:id" element={<EditBlogPost />} />
+           <Route path="/certificados" element={<CertificateGeneratorPage />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

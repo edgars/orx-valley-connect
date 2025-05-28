@@ -5,22 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useEvents } from '@/hooks/useEvents';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
 import CreateEventDialog from '@/components/CreateEventDialog';
+import EditEventDialog from '@/components/EditEventDialog';
+import AttendanceList from '@/components/AttendanceList';
 import CertificateGenerator from '@/components/CertificateGenerator';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, MapPin, Users, Plus, Award, Edit, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Award, Edit, UserCheck } from 'lucide-react';
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
   const { data: events, isLoading } = useEvents();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
   const [showCertificateDialog, setShowCertificateDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
@@ -128,9 +132,31 @@ const EventManagement = () => {
                       </div>
                     </div>
                     <div className="flex gap-2">
-                      <Button size="sm" variant="outline">
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setSelectedEvent(event);
+                          setShowEditDialog(true);
+                        }}
+                      >
                         <Edit className="w-4 h-4" />
                       </Button>
+                      
+                      {event.type === 'presencial' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            setSelectedEvent(event);
+                            setShowAttendanceDialog(true);
+                          }}
+                        >
+                          <UserCheck className="w-4 h-4 mr-1" />
+                          Presença
+                        </Button>
+                      )}
+                      
                       {event.status === 'finalizado' && (
                         <Button
                           size="sm"
@@ -148,8 +174,6 @@ const EventManagement = () => {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground mb-4">{event.description}</p>
-                  
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-muted-foreground" />
@@ -211,14 +235,34 @@ const EventManagement = () => {
       />
 
       {selectedEvent && (
-        <Dialog open={showCertificateDialog} onOpenChange={setShowCertificateDialog}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Gerar Certificados - {selectedEvent.title}</DialogTitle>
-            </DialogHeader>
-            <CertificateGenerator event={selectedEvent} />
-          </DialogContent>
-        </Dialog>
+        <>
+          <EditEventDialog
+            open={showEditDialog}
+            onClose={() => {
+              setShowEditDialog(false);
+              setSelectedEvent(null);
+            }}
+            event={selectedEvent}
+          />
+
+          <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Lista de Presença - {selectedEvent.title}</DialogTitle>
+              </DialogHeader>
+              <AttendanceList event={selectedEvent} />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={showCertificateDialog} onOpenChange={setShowCertificateDialog}>
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Gerar Certificados - {selectedEvent.title}</DialogTitle>
+              </DialogHeader>
+              <CertificateGenerator event={selectedEvent} />
+            </DialogContent>
+          </Dialog>
+        </>
       )}
     </div>
   );
