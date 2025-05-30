@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useMembers } from '@/hooks/useMembers';
 import { useAuth } from '@/contexts/AuthContext';
@@ -15,16 +14,14 @@ const Members = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const { data: members, isLoading } = useMembers(searchTerm);
 
-  // Só permite ver membros se estiver logado
-  if (!user) {
-    return <Navigate to="/auth" replace />;
-  }
-    if (isLoading) {
+  if (!user) return <Navigate to="/auth" replace />;
+
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-900">
         <Header />
-        <div className="container mx-auto px-4 py-8 pt-24">
-          <div className="text-center text-white">Carregando...</div>
+        <div className="container mx-auto px-4 py-8 pt-24 text-white text-center">
+          Carregando...
         </div>
         <Footer />
       </div>
@@ -32,7 +29,6 @@ const Members = () => {
   }
 
   return (
-    
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container py-8">
@@ -41,7 +37,6 @@ const Members = () => {
           <p className="text-muted-foreground mb-6">
             Conecte-se com outros membros da ORX Valley e expanda sua rede de contatos.
           </p>
-          
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
@@ -53,42 +48,64 @@ const Members = () => {
           </div>
         </div>
 
-        {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Card key={i} className="animate-pulse">
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center space-y-4">
-                    <div className="w-20 h-20 bg-muted rounded-full"></div>
-                    <div className="h-4 bg-muted rounded w-32"></div>
-                    <div className="h-3 bg-muted rounded w-24"></div>
-                    <div className="h-16 bg-muted rounded w-full"></div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        ) : members && members.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {members.map((member) => (
-              <MemberCard
-                key={member.id}
-                name={member.full_name || member.username || 'Membro'}
-                bio={member.bio || 'Membro da comunidade ORX Valley'}
-                location={member.location || 'Localização não informada'}
-                interests={member.interests || []}
-                avatar={member.avatar_url}
-                github={member.github_url}
-                linkedin={member.linkedin_url}
-              />
-            ))}
-          </div>
+        {members && members.length > 0 ? (
+          <>
+            {/* Admins */}
+            {members.some((member) => member.role === 'administrador') && (
+              <div className="mb-8">
+                <h2 className="text-xl font-semibold mb-2 text-primary">
+                  Administradores da Comunidade
+                </h2>
+                <div className="border-b border-muted mb-4" />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {members
+                    .filter((member) => member.role === 'administrador')
+                    .map((member) => (
+                      <MemberCard
+                        key={member.id}
+                        name={member.full_name || member.username || 'Membro'}
+                        bio={member.bio || 'Administrador da comunidade ORX Valley'}
+                        location={member.location || 'Localização não informada'}
+                        interests={member.interests || []}
+                        avatar={member.avatar_url}
+                        github={member.github_url}
+                        linkedin={member.linkedin_url}
+                        isAdmin={true}
+                      />
+                    ))}
+                </div>
+              </div>
+            )}
+
+            {/* Membros comuns */}
+            <div className="mb-8">
+              <h2 className="text-xl font-semibold mb-2 text-foreground">Membros</h2>
+              <div className="border-b border-muted mb-4" />
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {members
+                  .filter((member) => member.role !== 'administrador')
+                  .map((member) => (
+                    <MemberCard
+                      key={member.id}
+                      name={member.full_name || member.username || 'Membro'}
+                      bio={member.bio || 'Membro da comunidade ORX Valley'}
+                      location={member.location || 'Localização não informada'}
+                      interests={member.interests || []}
+                      avatar={member.avatar_url}
+                      github={member.github_url}
+                      linkedin={member.linkedin_url}
+                      isAdmin={false}
+                    />
+                  ))}
+              </div>
+            </div>
+          </>
         ) : (
           <Card>
             <CardContent className="py-12 text-center">
               <p className="text-muted-foreground text-lg">
-                {searchTerm 
-                  ? 'Nenhum membro encontrado com os termos de busca.' 
+                {searchTerm
+                  ? 'Nenhum membro encontrado com os termos de busca.'
                   : 'Nenhum membro encontrado.'}
               </p>
             </CardContent>

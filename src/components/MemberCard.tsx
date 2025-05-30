@@ -11,6 +11,7 @@ interface MemberCardProps {
   avatar?: string;
   github?: string;
   linkedin?: string;
+   isAdmin?: boolean;
 }
 
 const MemberCard = ({ name, bio, location, interests, avatar, github, linkedin }: MemberCardProps) => {

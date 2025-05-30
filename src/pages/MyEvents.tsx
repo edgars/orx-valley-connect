@@ -202,6 +202,7 @@ const MyEvents = () => {
           </Card>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

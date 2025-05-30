@@ -39,7 +39,6 @@ const Header = () => {
     }
   };
 
-  // Função para verificar se a tab está ativa
   const isActiveTab = (path) => {
     if (path === '#eventos') {
       return location.pathname === '/' && location.hash === '#eventos';
@@ -47,19 +46,15 @@ const Header = () => {
     return location.pathname === path || location.pathname.startsWith(path);
   };
 
-  // Função para lidar com clique em eventos
   const handleEventosClick = (e) => {
     e.preventDefault();
     if (location.pathname !== '/') {
-      // Se não estiver na home, navega para a home com hash
       window.location.href = '/#eventos';
     } else {
-      // Se já estiver na home, apenas adiciona o hash
       window.location.hash = '#eventos';
     }
   };
 
-  // Componente para link de navegação com indicador
   const NavLink = ({ href, to, children, onClick }: { 
     href?: string; 
     to?: string; 
@@ -101,16 +96,22 @@ const Header = () => {
           <div className="flex items-center">
             {isAdminRoute ? (
               <button onClick={handleLogoClick} className="flex items-center space-x-2">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
-                  ORX
-                </div>
+                <img
+                  src="/orxvalley.white.svg"
+                  alt="ORX Valley Logo"
+                  className="h-8 w-auto"
+                />
+
                 <span className="text-white text-xl font-semibold">ORX Valley</span>
               </button>
             ) : (
               <Link to="/" className="flex items-center space-x-2">
-                <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white px-3 py-1 rounded-lg font-bold text-sm">
-                  ORX
-                </div>
+                <img
+                  src="/orxvalley.colored.svg"
+                  alt="ORX Valley Logo"
+                  className="h-8 w-auto"
+                />
+
                 <span className="text-white text-xl font-semibold">ORX Valley</span>
               </Link>
             )}

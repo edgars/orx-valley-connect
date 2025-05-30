@@ -12,11 +12,11 @@ import Header from '@/components/Header';
 import CreateEventDialog from '@/components/CreateEventDialog';
 import EditEventDialog from '@/components/EditEventDialog';
 import AttendanceList from '@/components/AttendanceList';
-import CertificateGenerator from '@/components/CertificateGenerator';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Calendar, MapPin, Users, Plus, Award, Edit, UserCheck } from 'lucide-react';
+import CertificateGeneratorPage from './certificados';
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
@@ -259,7 +259,7 @@ const EventManagement = () => {
               <DialogHeader>
                 <DialogTitle>Gerar Certificados - {selectedEvent.title}</DialogTitle>
               </DialogHeader>
-              <CertificateGenerator event={selectedEvent} />
+              <CertificateGeneratorPage />
             </DialogContent>
           </Dialog>
         </>

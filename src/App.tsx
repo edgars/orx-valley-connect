@@ -20,7 +20,6 @@ import BlogManagement from "./pages/BlogManagement";
 import CreateBlogPost from "./pages/CreateBlogPost";
 import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
-import CertificateGenerator from "./components/CertificateGenerator";
 import CertificateGeneratorPage from "./pages/certificados";
 
 const queryClient = new QueryClient();
