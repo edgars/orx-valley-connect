@@ -6,14 +6,14 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 rounded-lg bg-orx-gradient flex items-center justify-center">
-                <span className="text-white font-bold text-sm">ORX</span>
-              </div>
-              <span className="text-xl font-bold">ORX Valley</span>
+                  <img
+                  src="/orxvalley.white.svg"
+                  alt="ORX Valley Logo"
+                  className="h-8 w-auto"
+                />
             </div>
             <p className="text-gray-400 text-sm">
-              Conectando estudantes e empreendedores de tecnologia para construir 
-              o futuro digital do Brasil.
+              O extraordinário nasce onde ninguém espera
             </p>
           </div>
           
