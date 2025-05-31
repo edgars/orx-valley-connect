@@ -763,58 +763,64 @@ export type Database = {
         ]
       }
       events: {
-        Row: {
-          allows_certificates: boolean | null
-          created_at: string | null
-          current_participants: number | null
-          date_time: string
-          description: string
-          id: string
-          image_url: string | null
-          location: string
-          max_participants: number | null
-          organizer_id: string
-          status: Database["public"]["Enums"]["event_status"] | null
-          stream_url: string | null
-          title: string
-          type: Database["public"]["Enums"]["event_type"]
-          updated_at: string | null
-        }
-        Insert: {
-          allows_certificates?: boolean | null
-          created_at?: string | null
-          current_participants?: number | null
-          date_time: string
-          description: string
-          id?: string
-          image_url?: string | null
-          location: string
-          max_participants?: number | null
-          organizer_id: string
-          status?: Database["public"]["Enums"]["event_status"] | null
-          stream_url?: string | null
-          title: string
-          type?: Database["public"]["Enums"]["event_type"]
-          updated_at?: string | null
-        }
-        Update: {
-          allows_certificates?: boolean | null
-          created_at?: string | null
-          current_participants?: number | null
-          date_time?: string
-          description?: string
-          id?: string
-          image_url?: string | null
-          location?: string
-          max_participants?: number | null
-          organizer_id?: string
-          status?: Database["public"]["Enums"]["event_status"] | null
-          stream_url?: string | null
-          title?: string
-          type?: Database["public"]["Enums"]["event_type"]
-          updated_at?: string | null
-        }
-        Relationships: []
+      Row: {
+        allows_certificates: boolean | null
+        created_at: string | null
+        current_participants: number | null
+        date_time: string
+        description: string
+        id: string
+        image_url: string | null
+        location: string
+        max_participants: number | null
+        organizer_id: string
+        speaker: string | null          // 👈 NOVA COLUNA
+        status: Database["public"]["Enums"]["event_status"] | null
+        stream_url: string | null
+        title: string
+        type: Database["public"]["Enums"]["event_type"]
+        updated_at: string | null
+        workload: number | null         // 👈 NOVA COLUNA (em horas)
+      }
+      Insert: {
+        allows_certificates?: boolean | null
+        created_at?: string | null
+        current_participants?: number | null
+        date_time: string
+        description: string
+        id?: string
+        image_url?: string | null
+        location: string
+        max_participants?: number | null
+        organizer_id: string
+        speaker?: string | null         // 👈 NOVA COLUNA
+        status?: Database["public"]["Enums"]["event_status"] | null
+        stream_url?: string | null
+        title: string
+        type?: Database["public"]["Enums"]["event_type"]
+        updated_at?: string | null
+        workload?: number | null        // 👈 NOVA COLUNA
+      }
+      Update: {
+        allows_certificates?: boolean | null
+        created_at?: string | null
+        current_participants?: number | null
+        date_time?: string
+        description?: string
+        id?: string
+        image_url?: string | null
+        location?: string
+        max_participants?: number | null
+        organizer_id?: string
+        speaker?: string | null         // 👈 NOVA COLUNA
+        status?: Database["public"]["Enums"]["event_status"] | null
+        stream_url?: string | null
+        title?: string
+        type?: Database["public"]["Enums"]["event_type"]
+        updated_at?: string | null
+        workload?: number | null        // 👈 NOVA COLUNA
+      }
+      Relationships: []
       }
       leads: {
         Row: {
