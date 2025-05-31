@@ -326,21 +326,20 @@ const Auth = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="password">Senha</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    placeholder="Sua senha"
-                    minLength={6}
-                  />
-                </div>
-
-                {/* Link para recuperar senha - só aparece no login */}
-                {isLogin && (
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                placeholder="Sua senha"
+                minLength={6}
+              />
+            </div>
+              {/* Link para recuperar senha - só aparece no login */}
+              {isLogin && (
                   <div className="text-right">
                     <button
                       type="button"
@@ -356,20 +355,18 @@ const Auth = () => {
                   </div>
                 )}
 
-                <Button
-                  type="submit"
-                  className="w-full bg-orx-gradient hover:opacity-90 text-white h-12"
-                  disabled={isLoading}
-                >
-                  {isLoading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  ) : isLogin ? (
-                    "Entrar"
-                  ) : (
-                    "Criar Conta"
-                  )}
-                </Button>
-              </form>
+            <Button
+              type="submit"
+              className="w-full bg-orx-gradient hover:opacity-90 text-white h-12"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              ) : (
+                isLogin ? 'Entrar' : 'Criar Conta'
+              )}
+            </Button>
+          </form>
 
               <div className="text-center">
                 <button

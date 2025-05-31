@@ -107,12 +107,11 @@ const Header = () => {
             ) : (
               <Link to="/" className="flex items-center space-x-2">
                 <img
-                  src="/orxvalley.colored.svg"
+                  src="/orxvalley.white.svg"
                   alt="ORX Valley Logo"
-                  className="h-8 w-auto"
+                  className="h-10 w-auto"
                 />
 
-                <span className="text-white text-xl font-semibold">ORX Valley</span>
               </Link>
             )}
           </div>
