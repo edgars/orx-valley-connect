@@ -6,7 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Award, Download, Eye, Sun, Moon, X, Calendar, MapPin, CheckCircle, Clock } from 'lucide-react';
+import { Award, Download, Eye, Sun, Moon, X, Calendar, MapPin, CheckCircle, Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -42,6 +42,8 @@ const CertificateGenerator = () => {
             organizer_id,
             image_url,
             stream_url,
+            speaker,
+            workload,
             created_at,
             updated_at
           )
@@ -72,7 +74,9 @@ const CertificateGenerator = () => {
             title,
             date_time,
             location,
-            status
+            status,
+            speaker,
+            workload
           )
         `)
         .eq('user_id', user.id)
@@ -165,12 +169,9 @@ const CertificateGenerator = () => {
     ctx.stroke();
   };
 
-  const generateCertificate = (event: any, download = false) => {
-    const canvas = canvasRef.current;
-    if (!canvas || !user) return;
-
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  // Função auxiliar para gerar certificado em qualquer canvas
+  const generateCertificateOnCanvas = (canvas: HTMLCanvasElement, ctx: CanvasRenderingContext2D, event: any, download = false) => {
+    if (!user) return;
 
     canvas.width = 1200;
     canvas.height = 800;
@@ -292,36 +293,61 @@ const CertificateGenerator = () => {
     ctx.textAlign = 'center';
 
     const eventDate = format(new Date(event.date_time), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    const workloadText = event.workload ? `${event.workload} horas` : '4 horas';
+    const speakerText = event.speaker ? event.speaker : 'wagner';
 
     const line1 = `que participou do evento "${event.title}", realizado no dia`;
     const line2 = `${eventDate}, em ${event.location}.`;
-    const line3 = `A atividade foi promovida pelo projeto ORX Valley, do tipo ${event.type}.`;
-    const line4 = `Certificado emitido em ${format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`;
+    const line3 = `A atividade foi promovida pelo projeto ORX Valley, do tipo ${event.type},`;
+    const line4 = `com carga horária de ${workloadText}, ministrada por ${speakerText}.`;
+    const line5 = `Certificado emitido em ${format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`;
 
     ctx.fillText(line1, canvas.width / 2, 360);
     ctx.fillText(line2, canvas.width / 2, 390);
 
-    // Break long line3 into multiple lines if needed
+    // Break long lines into multiple lines if needed
     const maxWidth = canvas.width - 200;
-    const words = line3.split(' ');
-    let currentLine = '';
     let lineY = 430;
 
-    for (let word of words) {
-      const testLine = currentLine + word + ' ';
+    // Line 3
+    const words3 = line3.split(' ');
+    let currentLine3 = '';
+    for (let word of words3) {
+      const testLine = currentLine3 + word + ' ';
       const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine !== '') {
-        ctx.fillText(currentLine.trim(), canvas.width / 2, lineY);
-        currentLine = word + ' ';
+      if (metrics.width > maxWidth && currentLine3 !== '') {
+        ctx.fillText(currentLine3.trim(), canvas.width / 2, lineY);
+        currentLine3 = word + ' ';
         lineY += 30;
       } else {
-        currentLine = testLine;
+        currentLine3 = testLine;
       }
     }
-    if (currentLine.trim() !== '') {
-      ctx.fillText(currentLine.trim(), canvas.width / 2, lineY);
+    if (currentLine3.trim() !== '') {
+      ctx.fillText(currentLine3.trim(), canvas.width / 2, lineY);
+      lineY += 30;
     }
-    ctx.fillText(line4, canvas.width / 2, lineY + 50);
+
+    // Line 4
+    const words4 = line4.split(' ');
+    let currentLine4 = '';
+    for (let word of words4) {
+      const testLine = currentLine4 + word + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > maxWidth && currentLine4 !== '') {
+        ctx.fillText(currentLine4.trim(), canvas.width / 2, lineY);
+        currentLine4 = word + ' ';
+        lineY += 30;
+      } else {
+        currentLine4 = testLine;
+      }
+    }
+    if (currentLine4.trim() !== '') {
+      ctx.fillText(currentLine4.trim(), canvas.width / 2, lineY);
+      lineY += 30;
+    }
+
+    ctx.fillText(line5, canvas.width / 2, lineY + 20);
 
     // Signatures
     const sigY = canvas.height - 120;
@@ -337,7 +363,8 @@ const CertificateGenerator = () => {
     ctx.font = 'italic 28px serif';
     ctx.fillText('_________________', canvas.width / 2 + 200, sigY);
     ctx.font = 'bold 18px serif';
-    ctx.fillText('Organizador', canvas.width / 2 + 200, sigY + 25);
+    const signatoryName = event.speaker ? event.speaker : 'Organizador';
+    ctx.fillText(signatoryName, canvas.width / 2 + 200, sigY + 25);
     ctx.font = '16px serif';
     ctx.fillText('Responsável', canvas.width / 2 + 200, sigY + 45);
 
@@ -347,6 +374,27 @@ const CertificateGenerator = () => {
       link.href = canvas.toDataURL('image/png', 1.0);
       link.click();
     }
+  };
+
+  // Função principal que usa o canvas do modal
+  const generateCertificate = (event: any, download = false) => {
+    const canvas = canvasRef.current;
+    if (!canvas || !user) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    generateCertificateOnCanvas(canvas, ctx, event, download);
+  };
+
+  // Função para baixar certificado diretamente
+  const handleDownloadCertificate = (event: any) => {
+    // Criar um canvas temporário para gerar o certificado
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d');
+    if (!tempCtx || !user) return;
+
+    generateCertificateOnCanvas(tempCanvas, tempCtx, event, true);
   };
 
   // Função para lidar com o clique no botão do certificado
@@ -394,10 +442,8 @@ const CertificateGenerator = () => {
   const hasEventsWithAttendance = registrations && registrations.length > 0;
 
   return (
-    <div className=" text-white">
-
-          <h1 className="text-4xl font-bold text-white mb-2">Certificados Disponíveis</h1>
-
+    <div className="text-white">
+      <h1 className="text-4xl font-bold text-white mb-2">Certificados Disponíveis</h1>
 
       <div className="max-w-7xl p-6">
         {/* Alerta de eventos sem certificado */}
@@ -473,19 +519,25 @@ const CertificateGenerator = () => {
                       </div>
                       <div className="flex items-center text-gray-400 text-sm">
                         <Clock className="w-4 h-4 mr-2" />
-                        Carga horária: 4 horas
+                        Carga horária: {event.workload ? `${event.workload} horas` : '4 horas'}
                       </div>
                       <div className="flex items-center text-gray-400 text-sm">
                         <MapPin className="w-4 h-4 mr-2" />
                         {event.location}
                       </div>
+                      {event.speaker && (
+                        <div className="flex items-center text-gray-400 text-sm">
+                          <User className="w-4 h-4 mr-2" />
+                          {event.speaker}
+                        </div>
+                      )}
                     </div>
 
                     {/* Botões */}
                     <div className="space-y-2">
                       <Button 
                         className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2"
-                        onClick={() => generateCertificate(event, true)}
+                        onClick={() => handleDownloadCertificate(event)}
                       >
                         Baixar Certificado
                       </Button>
@@ -586,6 +638,14 @@ const CertificateGenerator = () => {
                 <div>
                   <strong className="text-white">Local:</strong><br />
                   <span className="text-gray-300">{selectedEvent.location}</span>
+                </div>
+                <div>
+                  <strong className="text-white">Carga Horária:</strong><br />
+                  <span className="text-gray-300">{selectedEvent.workload ? `${selectedEvent.workload} horas` : '4 horas'}</span>
+                </div>
+                <div>
+                  <strong className="text-white">Palestrante:</strong><br />
+                  <span className="text-gray-300">{selectedEvent.speaker || 'Não informado'}</span>
                 </div>
                 <div>
                   <strong className="text-white">Tipo:</strong><br />
