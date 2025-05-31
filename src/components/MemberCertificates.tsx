@@ -16,6 +16,7 @@ const CertificateGenerator = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showModal, setShowModal] = useState(false);
+  const [dismissedAlert, setDismissedAlert] = useState(false);
 
   // Busca apenas eventos FINALIZADOS onde o usuário se inscreveu E tem presença marcada
   const { data: registrations, isLoading } = useQuery({
@@ -83,6 +84,106 @@ const CertificateGenerator = () => {
       return data;
     }
   });
+
+  // Função para gerar miniatura do certificado
+  const generateCertificateMiniature = (event: any, canvasId: string) => {
+    const canvas = document.getElementById(canvasId) as HTMLCanvasElement;
+    if (!canvas || !user) return;
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    canvas.width = 300;
+    canvas.height = 200;
+
+    // Background gradient
+    const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+    gradient.addColorStop(0, '#f8f9ff');
+    gradient.addColorStop(0.3, '#ffffff');
+    gradient.addColorStop(0.7, '#ffffff');
+    gradient.addColorStop(1, '#e8e9ff');
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Purple shapes (smaller)
+    ctx.fillStyle = '#6366f1';
+    ctx.globalAlpha = 0.1;
+
+    // Top right triangle
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 50, 0);
+    ctx.lineTo(canvas.width, 0);
+    ctx.lineTo(canvas.width, 50);
+    ctx.fill();
+
+    // Bottom left shape
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height - 40);
+    ctx.lineTo(40, canvas.height);
+    ctx.lineTo(0, canvas.height);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+
+    // Golden border
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(5, 5, canvas.width - 10, canvas.height - 10);
+
+    // Mini seal
+    const sealX = 40;
+    const sealY = 50;
+    const sealRadius = 15;
+
+    ctx.beginPath();
+    ctx.arc(sealX, sealY, sealRadius, 0, Math.PI * 2);
+    ctx.fillStyle = '#d4af37';
+    ctx.fill();
+
+    // Title
+    ctx.fillStyle = '#d4af37';
+    ctx.font = 'bold 16px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CERTIFICADO', canvas.width / 2, 30);
+
+    // Subtitle
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = 'bold 10px serif';
+    ctx.fillText('DE PARTICIPAÇÃO', canvas.width / 2, 45);
+
+    // Event title (truncated)
+    ctx.fillStyle = '#34495e';
+    ctx.font = '12px serif';
+    const eventTitle = event.title.length > 25 ? event.title.substring(0, 25) + '...' : event.title;
+    ctx.fillText(`"${eventTitle}"`, canvas.width / 2, 75);
+
+    // User name
+    const userName = user?.user_metadata?.full_name || user?.email || 'Participante';
+    ctx.fillStyle = '#d4af37';
+    ctx.font = 'bold 14px serif';
+    const displayName = userName.length > 20 ? userName.substring(0, 20) + '...' : userName;
+    ctx.fillText(displayName, canvas.width / 2, 100);
+
+    // Date
+    ctx.fillStyle = '#2c3e50';
+    ctx.font = '10px serif';
+    const eventDate = format(new Date(event.date_time), "dd/MM/yyyy", { locale: ptBR });
+    ctx.fillText(eventDate, canvas.width / 2, 120);
+
+    // ORX Valley signature
+    ctx.fillStyle = '#666';
+    ctx.font = 'bold 8px serif';
+    ctx.fillText('ORX Valley', canvas.width / 2, 145);
+
+    // Decorative lines
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2 - 30, 110);
+    ctx.lineTo(canvas.width / 2 + 30, 110);
+    ctx.stroke();
+  };
 
   const generateCertificate = (event: any, download = false) => {
     const canvas = canvasRef.current;
@@ -281,6 +382,18 @@ const CertificateGenerator = () => {
     }
   }, [selectedEvent, isDarkTheme]);
 
+  // Gerar miniaturas quando registrations carregam
+  useEffect(() => {
+    if (registrations && registrations.length > 0) {
+      registrations.forEach((registration, index) => {
+        const event = registration.events;
+        if (event) {
+          setTimeout(() => generateCertificateMiniature(event, `mini-canvas-${index}`), 100 + index * 50);
+        }
+      });
+    }
+  }, [registrations, user]);
+
   if (isLoading || loadingWithoutAttendance) {
     return (
       <div className="max-w-6xl mx-auto p-6">
@@ -298,117 +411,136 @@ const CertificateGenerator = () => {
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
-      {/* Header */}
+      {/* Header simplificado */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Meus Certificados</h1>
-        <p className="text-muted-foreground">
-          Certificados disponíveis para eventos finalizados com presença confirmada
-        </p>
       </div>
 
-      {/* Alertas informativos */}
-      {hasEventsWithoutAttendance && (
+      {/* Alerta otimizado - pode ser dispensado */}
+      {hasEventsWithoutAttendance && !dismissedAlert && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
               <div className="w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center flex-shrink-0 mt-0.5">
                 <span className="text-white text-xs font-bold">!</span>
               </div>
-              <div>
-                <h3 className="font-semibold text-orange-800 mb-1">
-                  Eventos sem certificado disponível
-                </h3>
-                <p className="text-orange-700 text-sm mb-2">
-                  Você participou de {eventsWithoutAttendance.length} evento(s) finalizado(s), 
-                  mas sua presença ainda não foi confirmada pelos organizadores:
-                </p>
-                <ul className="text-orange-700 text-sm space-y-1">
-                  {eventsWithoutAttendance.map((reg) => (
-                    <li key={reg.id} className="flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 bg-orange-500 rounded-full"></span>
-                      {reg.events.title} - {format(new Date(reg.events.date_time), "dd/MM/yyyy", { locale: ptBR })}
-                    </li>
-                  ))}
-                </ul>
-                <p className="text-orange-700 text-sm mt-2">
-                  Entre em contato com os organizadores para confirmar sua presença.
-                </p>
+              <div className="flex-1">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="font-semibold text-orange-800 mb-1">
+                      {eventsWithoutAttendance.length} evento(s) sem certificado
+                    </h3>
+                    <p className="text-orange-700 text-sm mb-2">
+                      Sua presença ainda não foi confirmada:
+                    </p>
+                    <div className="space-y-1">
+                      {eventsWithoutAttendance.map((reg) => (
+                        <div key={reg.id} className="flex items-center gap-2 text-orange-700 text-sm">
+                          <span className="w-1.5 h-1.5 bg-orange-500 rounded-full flex-shrink-0"></span>
+                          <span className="font-medium">{reg.events.title}</span>
+                          <span className="text-orange-600">•</span>
+                          <span className="text-orange-600">{format(new Date(reg.events.date_time), "dd/MM/yyyy", { locale: ptBR })}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <p className="text-orange-700 text-xs mt-2">
+                      Entre em contato com os organizadores se necessário.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setDismissedAlert(true)}
+                    className="text-orange-600 hover:text-orange-800 hover:bg-orange-100 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Grid de cards dos certificados */}
-      {hasEventsWithAttendance ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {registrations.map((registration) => {
-            const event = registration.events;
-            if (!event) return null;
+      {/* Card de Certificados */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Award className="w-5 h-5" />
+            Certificados Disponíveis
+            {hasEventsWithAttendance && (
+              <Badge variant="secondary">{registrations.length}</Badge>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {hasEventsWithAttendance ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {registrations.map((registration, index) => {
+                const event = registration.events;
+                if (!event) return null;
 
-            return (
-              <Card key={registration.id} className="border border-gray-200 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  {/* Badge de presença confirmada */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <Award className="w-6 h-6 text-blue-600" />
+                return (
+                  <div key={registration.id} className="relative border border-gray-200 rounded-lg overflow-hidden hover:shadow-md transition-shadow bg-white group">
+                    {/* Canvas como fundo */}
+                    <canvas
+                      id={`mini-canvas-${index}`}
+                      width="300"
+                      height="200"
+                      className="w-full h-32 object-cover"
+                    />
+                    
+                    {/* Overlay com informações */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex flex-col justify-end p-3">
+                      {/* Badge de presença confirmada - canto superior direito */}
+                      <div className="absolute top-2 right-2">
+                        <Badge variant="secondary" className="bg-green-100 text-green-800 text-xs">
+                          <CheckCircle className="w-3 h-3 mr-1" />
+                          Confirmado
+                        </Badge>
+                      </div>
+
+                      {/* Informações na parte inferior */}
+                      <div className="text-white">
+                        <h3 className="font-semibold text-sm leading-tight mb-1 drop-shadow-sm">
+                          {event.title}
+                        </h3>
+                        <div className="flex items-center text-xs opacity-90 mb-2">
+                          <Calendar className="w-3 h-3 mr-1" />
+                          {format(new Date(event.date_time), "dd/MM/yyyy", { locale: ptBR })}
+                          <span className="mx-2">•</span>
+                          <MapPin className="w-3 h-3 mr-1" />
+                          <span className="truncate">{event.location}</span>
+                        </div>
+                      </div>
+
+                      {/* Botão - aparece no hover */}
+                      <Button 
+                        size="sm"
+                        className="w-full text-xs py-2 bg-green-600 hover:bg-green-700 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        onClick={() => handleCertificateClick(event)}
+                      >
+                        📄 BAIXAR CERTIFICADO
+                      </Button>
                     </div>
-                    <Badge variant="secondary" className="bg-green-100 text-green-800">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      Presença confirmada
-                    </Badge>
                   </div>
-
-                  {/* Título do evento */}
-                  <div className="mb-4">
-                    <h3 className="font-semibold text-lg leading-tight mb-1">
-                      {event.title}
-                    </h3>
-                  </div>
-
-                  {/* Informações do evento */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {format(new Date(event.date_time), "dd/MM/yyyy", { locale: ptBR })}
-                    </div>
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin className="w-4 h-4 mr-2" />
-                      {event.location}
-                    </div>
-                  </div>
-
-                  {/* Botão */}
-                  <Button 
-                    className="w-full text-sm py-2 bg-green-600 hover:bg-green-700"
-                    onClick={() => handleCertificateClick(event)}
-                  >
-                    📄 BAIXAR CERTIFICADO
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-      ) : (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Award className="w-5 h-5" />
-              Certificados Disponíveis
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">
-              {hasEventsWithoutAttendance 
-                ? "Não há certificados disponíveis no momento. Sua presença precisa ser confirmada pelos organizadores dos eventos."
-                : "Você não possui eventos finalizados com presença confirmada. Participe de eventos e tenha sua presença marcada para gerar certificados."
-              }
-            </p>
-          </CardContent>
-        </Card>
-      )}
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <Award className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Nenhum certificado disponível</h3>
+              <p className="text-muted-foreground max-w-md mx-auto">
+                {hasEventsWithoutAttendance 
+                  ? "Sua presença precisa ser confirmada pelos organizadores."
+                  : "Participe de eventos e tenha sua presença marcada para gerar certificados."
+                }
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Modal do certificado */}
       {selectedEvent && showModal && (
