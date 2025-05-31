@@ -1,6 +1,5 @@
-
 import { useParams, useNavigate } from 'react-router-dom';
-import { useEvents } from '@/hooks/useEvents';
+import { useEvents, useEventById } from '@/hooks/useEvents';
 import { useUserEventRegistrations, useCheckEventRegistration } from '@/hooks/useEventRegistrations';
 import { useAuth } from '@/contexts/AuthContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -29,12 +28,14 @@ const EventDetails = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { data: events, isLoading: eventsLoading } = useEvents();
+  const { data: specificEvent, isLoading: specificEventLoading } = useEventById(id || '');
   const { data: userRegistrations, isLoading: registrationLoading } = useUserEventRegistrations();
   const { data: isRegistered } = useCheckEventRegistration(id || '');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  const event = events?.find(e => e.id === id);
+  // Prioriza o evento específico, senão busca na lista de eventos ativos
+  const event = specificEvent || events?.find(e => e.id === id);
   const canRegister = event && event.current_participants < (event.max_participants || Infinity);
 
   const registerMutation = useMutation({
@@ -55,6 +56,7 @@ const EventDetails = () => {
       queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event', id] });
       toast({
         title: "Inscrição realizada!",
         description: "Você foi inscrito no evento com sucesso.",
@@ -86,6 +88,7 @@ const EventDetails = () => {
       queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
+      queryClient.invalidateQueries({ queryKey: ['event', id] });
       toast({
         title: "Inscrição cancelada!",
         description: "Sua inscrição foi cancelada com sucesso.",
@@ -140,7 +143,8 @@ const EventDetails = () => {
     }
   };
 
-  if (eventsLoading) {
+  // Loading - incluindo o carregamento do evento específico
+  if (eventsLoading || specificEventLoading) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
@@ -352,13 +356,19 @@ const EventDetails = () => {
                       </Button>
                     )}
 
-                    {isEventPast && (
+                    {(isEventPast || event.status === 'finalizado') && (
                       <div className="text-center text-muted-foreground">
-                        Este evento já aconteceu
+                        Este evento já foi finalizado
                       </div>
                     )}
 
-                    {event.status !== 'ativo' && (
+                    {event.status === 'cancelado' && (
+                      <div className="text-center text-red-600">
+                        Este evento foi cancelado
+                      </div>
+                    )}
+
+                    {event.status !== 'ativo' && event.status !== 'finalizado' && event.status !== 'cancelado' && (
                       <div className="text-center text-muted-foreground">
                         Inscrições não disponíveis
                       </div>

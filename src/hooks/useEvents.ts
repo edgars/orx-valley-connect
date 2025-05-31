@@ -20,6 +20,25 @@ export interface Event {
   updated_at: string;
 }
 
+export const useEventById = (id: string) => {
+  return useQuery({
+    queryKey: ['event', id],
+    queryFn: async () => {
+      if (!id) return null;
+      
+      const { data, error } = await supabase
+        .from('events')
+        .select('*')
+        .eq('id', id)
+        .single();
+      
+      if (error) throw error;
+      return data as Event;
+    },
+    enabled: !!id
+  });
+};
+
 export const useEvents = () => {
   return useQuery({
     queryKey: ['events'],

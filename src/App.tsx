@@ -21,6 +21,7 @@ import CreateBlogPost from "./pages/CreateBlogPost";
 import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
 import CertificateGeneratorPage from "./pages/certificados";
+import ResetPassword from "./components/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/blog/criar" element={<CreateBlogPost />} />
             <Route path="/blog/editar/:id" element={<EditBlogPost />} />
            <Route path="/certificados" element={<CertificateGeneratorPage />} />
+           <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
