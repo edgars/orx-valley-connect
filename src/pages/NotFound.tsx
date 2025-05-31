@@ -15,7 +15,7 @@ const NotFound = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b">
       <div className="text-center">
-      <img src="public/capybara.svg" alt="capybara" className="w-60 h-62 mx-auto mb-8" />
+      <img src="/capybara.svg" alt="capybara" className="w-60 h-62 mx-auto mb-8" />
       <h1 className="text-6xl font-extrabold text-white mb-4 ">
           404
         </h1>

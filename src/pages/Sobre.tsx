@@ -181,7 +181,7 @@ const AboutSection = () => {
                     <div className="relative bg-gradient-to-br from-card via-card/95 to-card/90 rounded-2xl p-4 shadow-2xl border-2 border-primary/20">
                       <div className="relative overflow-hidden rounded-xl">
                         <img 
-                          src="public/team-img.jpg"
+                          src="/team-img.jpg"
                           alt="Equipe ORX Valley - Profissionais unidos pela transformação"
                           className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
                         />
