@@ -127,6 +127,9 @@ const Header = () => {
             <NavLink to="/blog">
               Blog
             </NavLink>
+            <NavLink to="/sobre">
+              Sobre
+            </NavLink>
             
             {user && (
               <>

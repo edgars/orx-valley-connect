@@ -185,7 +185,7 @@ const EventManagement = () => {
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container py-8">
-        <div className="flex justify-between items-center mb-8">
+        <div className="flex justify-between items-center mt-16 mb-6">
           <h1 className="text-3xl font-bold text-gradient">Gestão de Eventos</h1>
           <Button
             onClick={() => setShowCreateDialog(true)}
