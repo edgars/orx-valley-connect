@@ -62,7 +62,7 @@ const Auth = () => {
 
         toast({
           title: "Conta criada com sucesso!",
-          description: "Bem-vindo ao ORX Valley. Você pode fazer login agora.",
+          description: "Verifique seu email e clique no link de confirmação para ativar sua conta.",
         });
         setIsLogin(true);
       }

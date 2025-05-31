@@ -22,6 +22,7 @@ import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
 import CertificateGeneratorPage from "./pages/certificados";
 import ResetPassword from "./components/ResetPassword";
+import Sobre from "./pages/Sobre";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/Comunidade" element={<Members />} />
             <Route path="/meus-eventos" element={<MyEvents />} />
             <Route path="/blog" element={<Blog />} />
+            <Route path="/sobre" element={<Sobre />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/blog/gerenciar" element={<BlogManagement />} />
             <Route path="/blog/criar" element={<CreateBlogPost />} />
