@@ -1,19 +1,21 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useUserEventRegistrations } from '@/hooks/useEventRegistrations';
-import { useAuth } from '@/contexts/AuthContext';
-import Header from '@/components/Header';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Calendar, MapPin, Users, Award, Globe, Eye } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
-import Footer from '@/components/Footer';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useUserEventRegistrations } from "@/hooks/useEventRegistrations";
+import { useAuth } from "@/contexts/AuthContext";
+import Header from "@/components/Header";
+import { format } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { BookOpen, List } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import Footer from "@/components/Footer";
+import { useEvents } from "@/hooks/useEvents";
 
 const MyEvents = () => {
   const { user } = useAuth();
-  const { data: registrations, isLoading } = useUserEventRegistrations();
+  const { data: registrations, isLoading: loadingRegistrations } =
+    useUserEventRegistrations();
+  const { data: allEvents, isLoading: loadingAllEvents } = useEvents();
   const navigate = useNavigate();
 
   if (!user) {
@@ -33,12 +35,14 @@ const MyEvents = () => {
     );
   }
 
-  if (isLoading) {
+  if (loadingRegistrations || loadingAllEvents) {
     return (
       <div className="min-h-screen bg-background">
         <Header />
         <div className="container py-8">
-          <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
+          <h1 className="text-3xl font-bold mb-8 text-gradient">
+            Meus Eventos
+          </h1>
           <p>Carregando seus eventos...</p>
         </div>
         <Footer />
@@ -46,156 +50,148 @@ const MyEvents = () => {
     );
   }
 
-  const upcomingEvents = registrations?.filter(reg => 
-    reg.events && new Date(reg.events.date_time) > new Date()
-  ) || [];
+  const myRegisteredEvents =
+    registrations?.map((reg) => reg.events).filter(Boolean) || [];
+  const myRegisteredEventIds = new Set(
+    myRegisteredEvents.map((event) => event.id)
+  );
 
-  const pastEvents = registrations?.filter(reg => 
-    reg.events && new Date(reg.events.date_time) <= new Date()
-  ) || [];
+  const availableEvents =
+    allEvents?.filter(
+      (event) =>
+        !myRegisteredEventIds.has(event.id) &&
+        new Date(event.date_time) > new Date()
+    ) || [];
+
+  const renderEventCard = (event: any) => {
+    const maxParticipants = event.max_participants || 0;
+    const currentParticipants = event.current_participants || 0;
+    const remainingSpots =
+      maxParticipants > 0 ? maxParticipants - currentParticipants : null;
+
+    return (
+      <div
+        key={event.id}
+        className="bg-[#111] rounded-xl shadow-md border border-neutral-800 overflow-hidden text-white relative"
+      >
+        <div className="relative h-40 overflow-hidden">
+          <img
+            src={event.image_url || "/orxvalley.white.svg"}
+            alt={event.title}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/50" />
+          <div className="absolute top-3 right-3">
+            <Badge
+              className={`
+              text-white text-xs font-semibold px-3 py-1 rounded-full border-0
+              ${event.type === "presencial" ? "bg-orange-500" : ""}
+              ${event.type === "online" ? "bg-blue-500" : ""}
+              ${event.type === "hibrido" ? "bg-purple-500" : ""}
+            `}
+            >
+              {event.type.charAt(0).toUpperCase() + event.type.slice(1)}
+            </Badge>
+          </div>
+        </div>
+
+        <div className="p-5">
+          <h3 className="text-lg font-semibold leading-snug">{event.title}</h3>
+
+          <div className="mt-2 text-sm text-gray-300 space-y-1">
+            <div>
+              {format(new Date(event.date_time), "dd 'de' MMMM, yyyy - HH:mm", {
+                locale: ptBR,
+              })}
+            </div>
+            <div>{event.location}</div>
+            <div>
+              {currentParticipants}/{maxParticipants} participantes
+            </div>
+          </div>
+
+          {remainingSpots !== null && remainingSpots > 0 && (
+            <div className="flex items-center justify-center">
+              <p className="text-yellow-400 font-semibold text-sm mt-3">
+                Apenas {remainingSpots} vaga{remainingSpots !== 1 ? "s" : ""}{" "}
+                restante{remainingSpots !== 1 ? "s" : ""}!
+              </p>
+            </div>
+          )}
+
+          <div className="mt-5 space-y-2">
+            <Button
+              variant="outline"
+              className="w-full border border-neutral-600 bg-transparent text-white hover:bg-white/10"
+              onClick={() => navigate(`/eventos/${event.id}`)}
+            >
+              Ver Detalhes
+            </Button>
+            {/*  <Button
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+              onClick={() => console.log("Inscrever-se clicado")}
+            >
+              Inscrever-se
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full border border-neutral-600 bg-transparent text-white hover:bg-white/10"
+              onClick={() => console.log("Adicionar ao calendário")}
+            >
+              Adicionar ao Calendário
+            </Button> */}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <Header />
       <div className="container py-8">
         <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
-        
+
         <div className="grid gap-8">
-
-
-          {/* Próximos Eventos */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Calendar className="w-5 h-5" />
-                Próximos Eventos
+                <BookOpen className="w-5 h-5" />
+                Minhas Inscrições
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {upcomingEvents.length === 0 ? (
-                <p className="text-muted-foreground">Você não tem eventos próximos.</p>
+              {myRegisteredEvents.length === 0 ? (
+                <p className="text-muted-foreground">
+                  Você ainda não se inscreveu em nenhum evento.
+                </p>
               ) : (
-                <div className="grid gap-4">
-                  {upcomingEvents.map((registration) => {
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {registrations?.map((registration) => {
                     const event = registration.events;
                     if (!event) return null;
-
-                    return (
-                      <div key={registration.id} className="border rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="font-semibold text-lg">{event.title}</h3>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <Badge variant="outline">{event.type}</Badge>
-                              <Badge className="bg-blue-500">Inscrito</Badge>
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/eventos/${event.id}`)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver Detalhes
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{format(new Date(event.date_time), "dd 'de' MMMM, yyyy - HH:mm", { locale: ptBR })}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{event.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>{event.current_participants} participantes</span>
-                          </div>
-                        </div>
-
-                        {(event.type === 'online' || event.type === 'hibrido') && event.stream_url && (
-                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                            <div className="flex items-center gap-2 text-blue-700">
-                              <Globe className="w-4 h-4" />
-                              <a 
-                                href={event.stream_url} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="hover:underline font-medium"
-                              >
-                                Acessar transmissão do evento
-                              </a>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
+                    return renderEventCard(event);
                   })}
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* Eventos Passados */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Award className="w-5 h-5" />
-                Eventos Anteriores
+                <List className="w-5 h-5" />
+                Todos os disponíveis
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {pastEvents.length === 0 ? (
-                <p className="text-muted-foreground">Você ainda não participou de eventos anteriores.</p>
+              {availableEvents.length === 0 ? (
+                <p className="text-muted-foreground">
+                  Não há eventos disponíveis para inscrição no momento.
+                </p>
               ) : (
-                <div className="grid gap-4">
-                  {pastEvents.map((registration) => {
-                    const event = registration.events;
-                    if (!event) return null;
-
-                    return (
-                      <div key={registration.id} className="border rounded-lg p-4">
-                        <div className="flex items-start justify-between mb-3">
-                          <div>
-                            <h3 className="font-semibold text-lg">{event.title}</h3>
-                            <div className="flex flex-wrap gap-2 mt-2">
-                              <Badge variant="outline">{event.type}</Badge>
-                              {registration.attended ? (
-                                <Badge className="bg-green-500">Presente</Badge>
-                              ) : (
-                                <Badge variant="secondary">Ausente</Badge>
-                              )}
-                            </div>
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => navigate(`/eventos/${event.id}`)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            Ver Detalhes
-                          </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-muted-foreground">
-                          <div className="flex items-center gap-2">
-                            <Calendar className="w-4 h-4" />
-                            <span>{format(new Date(event.date_time), "dd 'de' MMMM, yyyy - HH:mm", { locale: ptBR })}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <MapPin className="w-4 h-4" />
-                            <span>{event.location}</span>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <Users className="w-4 h-4" />
-                            <span>{event.current_participants} participantes</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {availableEvents.map((event) => renderEventCard(event))}
                 </div>
               )}
             </CardContent>

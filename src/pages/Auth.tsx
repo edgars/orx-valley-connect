@@ -182,7 +182,7 @@ const Auth = () => {
         <div className="max-w-md w-full mx-auto space-y-8">
           <div className="text-center">
             <img
-              src="public/orxvalley.white.svg"
+              src="/orxvalley.white.svg"
               width="300"
               alt="orx-valley-logo"
               className="mx-auto block mb-8 h-20"
