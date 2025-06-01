@@ -18,6 +18,8 @@ export interface Event {
   stream_url?: string;
   created_at: string;
   updated_at: string;
+  speaker: string | null;       
+  workload: number | null; 
 }
 
 export const useEventById = (id: string) => {

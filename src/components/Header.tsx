@@ -2,13 +2,16 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Menu, X, User, LogOut } from "lucide-react";
+import { Menu, X, User, LogOut, ChevronDown, Settings, Users, FileText } from "lucide-react";
 import AdminDropdown from "./AdminDropdown";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
+  const [isMobileProfileOpen, setIsMobileProfileOpen] = useState(false);
+  const [isMobileAdminOpen, setIsMobileAdminOpen] = useState(false);
+  const [imageError, setImageError] = useState(false);
   const { user, profile, signOut } = useAuth();
   const location = useLocation();
   const profileDropdownRef = useRef(null);
@@ -30,12 +33,70 @@ const Header = () => {
     };
   }, []);
 
+  // Fechar menus quando a tela mudar de tamanho
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setIsMenuOpen(false);
+        setIsMobileProfileOpen(false);
+        setIsMobileAdminOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const isAdmin = profile?.role === "administrador";
   const isAdminRoute =
     location.pathname.includes("/admin") ||
     location.pathname.includes("/gerenciar") ||
     location.pathname === "/eventos/gerenciar" ||
     location.pathname === "/blog/gerenciar";
+
+  // Função para gerar iniciais do username
+  const getInitials = (username: string) => {
+    if (!username) return "U";
+    
+    const words = username.trim().split(" ");
+    if (words.length === 1) {
+      return words[0].substring(0, 2).toUpperCase();
+    }
+    return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+  };
+
+  // Componente Avatar
+  const UserAvatar = ({ size = "sm", showName = false }: { size?: "sm" | "xs", showName?: boolean }) => {
+    const [imageError, setImageError] = useState(false);
+    const sizeClasses = size === "sm" ? "w-8 h-8" : "w-6 h-6";
+    const textSizeClasses = size === "sm" ? "text-sm" : "text-xs";
+    const username = profile?.username || profile?.full_name || "User";
+    const avatarUrl = profile?.avatar_url;
+
+    return (
+      <div className="flex items-center gap-2">
+        <div className={`${sizeClasses} rounded-full overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0`}>
+          {avatarUrl && !imageError ? (
+            <img 
+              src={avatarUrl} 
+              alt={username}
+              className="w-full h-full object-cover"
+              onError={() => setImageError(true)}
+            />
+          ) : (
+            <span className={`text-white font-semibold ${textSizeClasses}`}>
+              {getInitials(username)}
+            </span>
+          )}
+        </div>
+        {showName && (
+          <span className="text-white truncate max-w-24">
+            {username}
+          </span>
+        )}
+      </div>
+    );
+  };
 
   const handleLogoClick = () => {
     if (isAdminRoute) {
@@ -114,7 +175,6 @@ const Header = () => {
                   alt="ORX Valley Logo"
                   className="h-8 w-auto"
                 />
-
                 <span className="text-white text-xl font-semibold">
                   ORX Valley
                 </span>
@@ -143,7 +203,6 @@ const Header = () => {
             {user && (
               <>
                 <NavLink to="/meus-eventos">Eventos</NavLink>
-
                 <NavLink to="/sobre">Sobre</NavLink>
 
                 {isAdmin && (
@@ -158,7 +217,7 @@ const Header = () => {
             )}
           </nav>
 
-          {/* User Menu */}
+          {/* Desktop User Menu */}
           <div className="hidden md:flex items-center space-x-4">
             {user ? (
               <div className="flex items-center space-x-4">
@@ -169,13 +228,15 @@ const Header = () => {
                     onClick={() =>
                       setIsProfileDropdownOpen(!isProfileDropdownOpen)
                     }
-                    className="text-white hover:bg-gray-800"
+                    className="text-white hover:bg-gray-800 flex items-center gap-2 pl-2 pr-3"
                   >
-                    <User className="w-4 h-4 mr-2" />
-                    {profile?.username || "Perfil"}
+                    <UserAvatar size="sm" />
+                    <span className="text-sm">
+                      {profile?.username || profile?.full_name || "Perfil"}
+                    </span>
                   </Button>
 
-                  {/* Profile Dropdown - Estilo Escuro */}
+                  {/* Profile Dropdown - Desktop */}
                   {isProfileDropdownOpen && (
                     <div className="absolute right-0 top-full mt-2 w-48 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
                       <Link
@@ -257,7 +318,8 @@ const Header = () => {
           </div>
 
           {/* Mobile menu button */}
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center space-x-2">
+            {user && <UserAvatar size="xs" />}
             <Button
               variant="ghost"
               size="sm"
@@ -292,68 +354,156 @@ const Header = () => {
               <NavLink to="/blog" onClick={() => setIsMenuOpen(false)}>
                 Blog
               </NavLink>
-              {!user && <NavLink to="/sobre">Sobre</NavLink>}
+              
+              {!user && <NavLink to="/sobre" onClick={() => setIsMenuOpen(false)}>Sobre</NavLink>}
+              
               {user && (
                 <>
-                  <NavLink
-                    to="/meus-eventos"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
+                  <NavLink to="/meus-eventos" onClick={() => setIsMenuOpen(false)}>
                     Eventos
                   </NavLink>
+                  <NavLink to="/sobre" onClick={() => setIsMenuOpen(false)}>
+                    Sobre
+                  </NavLink>
                   
-                  <NavLink to="/sobre">Sobre</NavLink>
                   {isAdmin && (
                     <>
-                      <NavLink to="/admin" onClick={() => setIsMenuOpen(false)}>
-                        Admin
-                      </NavLink>
-                      <NavLink
-                        to="/eventos/gerenciar"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Gestão de Eventos
-                      </NavLink>
-                      <NavLink
-                        to="/blog/gerenciar"
-                        onClick={() => setIsMenuOpen(false)}
-                      >
-                        Gerenciar Blog
-                      </NavLink>
+                      {/* Mobile Admin Section */}
+                      <div className="border-t border-gray-600 pt-4 mt-4">
+                        <button
+                          onClick={() => setIsMobileAdminOpen(!isMobileAdminOpen)}
+                          className="flex items-center justify-between w-full text-gray-300 hover:text-white transition-colors py-2"
+                        >
+                          <div className="flex items-center">
+                            <Settings className="w-4 h-4 mr-3" />
+                            <span>Administração</span>
+                          </div>
+                          <ChevronDown 
+                            className={`w-4 h-4 transition-transform ${
+                              isMobileAdminOpen ? 'rotate-180' : ''
+                            }`} 
+                          />
+                        </button>
+                        
+                        {/* Mobile Admin Submenu */}
+                        {isMobileAdminOpen && (
+                          <div className="ml-6 mt-2 space-y-2 border-l-2 border-gray-600 pl-4">
+                            <Link
+                              to="/admin"
+                              className="flex items-center text-gray-400 hover:text-white transition-colors py-1"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileAdminOpen(false);
+                              }}
+                            >
+                              <Settings className="w-3 h-3 mr-2" />
+                              Dashboard
+                            </Link>
+                            <Link
+                              to="/eventos/gerenciar"
+                              className="flex items-center text-gray-400 hover:text-white transition-colors py-1"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileAdminOpen(false);
+                              }}
+                            >
+                              <Users className="w-3 h-3 mr-2" />
+                              Gestão de Eventos
+                            </Link>
+                            <Link
+                              to="/blog/gerenciar"
+                              className="flex items-center text-gray-400 hover:text-white transition-colors py-1"
+                              onClick={() => {
+                                setIsMenuOpen(false);
+                                setIsMobileAdminOpen(false);
+                              }}
+                            >
+                              <FileText className="w-3 h-3 mr-2" />
+                              Gerenciar Blog
+                            </Link>
+                          </div>
+                        )}
+                      </div>
                     </>
                   )}
+
+                  {/* Mobile Profile Section */}
                   <div className="border-t border-gray-600 pt-4 mt-4">
-                    <NavLink to="/perfil" onClick={() => setIsMenuOpen(false)}>
-                      Meu Perfil
-                    </NavLink>
-                    <NavLink
-                      to="/certificados"
-                      onClick={() => setIsMenuOpen(false)}
+                    <button
+                      onClick={() => setIsMobileProfileOpen(!isMobileProfileOpen)}
+                      className="flex items-center justify-between w-full text-gray-300 hover:text-white transition-colors py-2"
                     >
-                      Certificados
-                    </NavLink>
-                    <NavLink
-                      to="/configuracoes"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      Configurações
-                    </NavLink>
+                      <div className="flex items-center">
+                        <UserAvatar size="xs" />
+                        <span className="ml-3">Minha Conta</span>
+                      </div>
+                      <ChevronDown 
+                        className={`w-4 h-4 transition-transform ${
+                          isMobileProfileOpen ? 'rotate-180' : ''
+                        }`} 
+                      />
+                    </button>
+                    
+                    {/* Mobile Profile Submenu */}
+                    {isMobileProfileOpen && (
+                      <div className="ml-6 mt-2 space-y-2 border-l-2 border-gray-600 pl-4">
+                        <Link
+                          to="/perfil"
+                          className="block text-gray-400 hover:text-white transition-colors py-1"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsMobileProfileOpen(false);
+                          }}
+                        >
+                          Meu Perfil
+                        </Link>
+                        <Link
+                          to="/certificados"
+                          className="block text-gray-400 hover:text-white transition-colors py-1"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsMobileProfileOpen(false);
+                          }}
+                        >
+                          Certificados
+                        </Link>
+                        <Link
+                          to="/configuracoes"
+                          className="block text-gray-400 hover:text-white transition-colors py-1"
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            setIsMobileProfileOpen(false);
+                          }}
+                        >
+                          Configurações
+                        </Link>
+                      </div>
+                    )}
+                    
                     <button
                       onClick={() => {
                         signOut();
                         setIsMenuOpen(false);
+                        setIsMobileProfileOpen(false);
+                        setIsMobileAdminOpen(false);
                       }}
-                      className="text-gray-300 hover:text-white transition-colors text-left"
+                      className="flex items-center text-gray-300 hover:text-white transition-colors mt-4 py-2"
                     >
+                      <LogOut className="w-4 h-4 mr-3" />
                       Sair
                     </button>
                   </div>
                 </>
               )}
+              
               {!user && (
-                <NavLink to="/auth" onClick={() => setIsMenuOpen(false)}>
+                <Link 
+                  to="/auth" 
+                  onClick={() => setIsMenuOpen(false)}
+                  className="text-gray-300 hover:text-white transition-colors"
+                >
                   Entrar
-                </NavLink>
+                </Link>
               )}
             </nav>
           </div>
