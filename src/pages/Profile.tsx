@@ -416,7 +416,7 @@ const Profile = () => {
                 <div className="space-y-4">
                   <div>
                     <Label className="text-sm font-medium">Email da conta</Label>
-                    <div className="text-sm text-muted-foreground">{user?.email}</div>
+                    <div className="text-sm text-muted-foreground break-all">{user?.email}</div>
                   </div>
 
                   <div>
@@ -438,7 +438,7 @@ const Profile = () => {
                 {isOAuthUser && !hasEmailProvider && (
                   <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
                     <div className="flex items-start gap-3">
-                      <Key className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
+                      <Key className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                       <div>
                         <h4 className="font-medium text-blue-900 dark:text-blue-100">
                           Defina uma senha
@@ -465,6 +465,7 @@ const Profile = () => {
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           required
                           placeholder="Digite sua senha atual"
+                          className="pr-12"
                         />
                         <Button
                           type="button"
@@ -496,6 +497,7 @@ const Profile = () => {
                         required
                         placeholder="Digite sua nova senha"
                         minLength={6}
+                        className="pr-12"
                       />
                       <Button
                         type="button"
@@ -527,6 +529,7 @@ const Profile = () => {
                         required
                         placeholder="Confirme sua nova senha"
                         minLength={6}
+                        className="pr-12"
                       />
                       <Button
                         type="button"
@@ -544,30 +547,37 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  <div className="flex gap-3">
-                    <Button
+                  <div className="flex flex-col sm:flex-row gap-3 sm:justify-center pt-4">
+                    <Button 
                       type="submit"
-                      className="bg-orx-gradient hover:opacity-90 text-white"
+                      size="lg" 
+                      className="bg-orx-gradient hover:opacity-90 text-white text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg w-full sm:w-auto sm:max-w-sm transition-all duration-300 hover:shadow-xl order-1"
                       disabled={isUpdatingPassword}
                     >
                       {isUpdatingPassword ? (
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        <div className="flex items-center justify-center">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Processando...
+                        </div>
                       ) : (
-                        <>
-                          <Key className="w-4 h-4 mr-2" />
+                        <span className="flex items-center justify-center">
+                          <Key className="w-4 h-4 mr-2 flex-shrink-0" />
                           {isOAuthUser && !hasEmailProvider ? 'Definir Senha' : 'Atualizar Senha'}
-                        </>
+                        </span>
                       )}
                     </Button>
 
-                    {/* Opção alternativa por email */}
                     <Button
                       type="button"
                       onClick={sendPasswordResetEmail}
                       variant="outline"
+                      size="lg"
+                      className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg rounded-xl transition-all duration-300 order-2"
                       disabled={isUpdatingPassword}
                     >
-                      Enviar Link por Email
+                      <span className="flex items-center justify-center">
+                        Enviar Link por Email
+                      </span>
                     </Button>
                   </div>
                 </form>

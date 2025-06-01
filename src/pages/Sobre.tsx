@@ -32,11 +32,11 @@ const AboutSection = () => {
   ];
 
   const principles = [
-    "Você é capaz de ser mais forte do que as circunstâncias",
-    "Ninguém te deve nada, mas tudo pode ser conquistado",
-    "O fracasso não é vergonha, mas parte essencial da jornada",
-    "Honestidade, disciplina, lealdade e fé são inegociáveis",
-    "O verdadeiro privilégio é poder aprender e crescer"
+    "Você é capaz de ser mais forte do que as circunstâncias.",
+    "Ninguém te deve nada, mas tudo pode ser conquistado.",
+    "O fracasso não é vergonha, mas parte essencial da jornada.",
+    "Honestidade, disciplina, lealdade e fé são inegociáveis.",
+    "O verdadeiro privilégio é poder aprender e crescer."
   ];
 
   return (
@@ -131,8 +131,8 @@ const AboutSection = () => {
                 Nossa <span className="text-gradient">Equipe</span>
               </h2>
               
-              <div className="grid lg:grid-cols-2 gap-12 items-center">
-                <div className="space-y-6">
+              <div className="grid lg:grid-cols-2 gap-12 items-start lg:items-center">
+                <div className="space-y-6 order-2 lg:order-1">
                   <p className="text-lg text-muted-foreground leading-relaxed">
                     Por trás do ORX Valley está uma equipe extraordinária de profissionais que compartilham 
                     da mesma visão: <strong className="text-primary">transformar vidas através da educação 
@@ -146,22 +146,22 @@ const AboutSection = () => {
                     <em className="text-primary font-semibold"> inspirem, eduquem e transformem</em>.
                   </p>
 
-                  <div className="grid grid-cols-2 gap-4 pt-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-6">
                     <div className="bg-card/30 backdrop-blur-sm rounded-lg p-4 border-l-4 border-primary">
                       <h4 className="font-semibold text-primary mb-2">Desenvolvimento</h4>
-                      <p className="text-sm text-muted-foreground">Desenvolvedores formados e programadores especializados</p>
+                      <p className="text-sm text-muted-foreground">Desenvolvedores formados e programadores especializados.</p>
                     </div>
                     <div className="bg-card/30 backdrop-blur-sm rounded-lg p-4 border-l-4 border-primary">
                       <h4 className="font-semibold text-primary mb-2">Qualidade</h4>
-                      <p className="text-sm text-muted-foreground">QAs dedicados à excelência em cada detalhe</p>
+                      <p className="text-sm text-muted-foreground">QAs dedicados à excelência em cada detalhe.</p>
                     </div>
                     <div className="bg-card/30 backdrop-blur-sm rounded-lg p-4 border-l-4 border-primary">
                       <h4 className="font-semibold text-primary mb-2">Criatividade</h4>
-                      <p className="text-sm text-muted-foreground">Designers que dão vida às nossas ideias</p>
+                      <p className="text-sm text-muted-foreground">Designers que dão vida às nossas ideias.</p>
                     </div>
                     <div className="bg-card/30 backdrop-blur-sm rounded-lg p-4 border-l-4 border-primary">
                       <h4 className="font-semibold text-primary mb-2">Estratégia</h4>
-                      <p className="text-sm text-muted-foreground">Marketeiros, administradores e gestores visionários</p>
+                      <p className="text-sm text-muted-foreground">Marketeiros, administradores e gestores visionários.</p>
                     </div>
                   </div>
 
@@ -170,24 +170,25 @@ const AboutSection = () => {
                       "Cada membro da nossa equipe é protagonista da própria história"
                     </p>
                     <p className="text-center text-muted-foreground">
-                      E juntos, construímos o futuro da próxima geração
+                      E juntos, construímos o futuro da próxima geração.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex justify-center">
-                  <div className="relative group">
-                    <div className="absolute -inset-2 bg-gradient-to-r from-primary via-primary/70 to-primary rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity  animate-pulse"></div>
+                <div className="flex justify-center order-1 lg:order-2">
+                  <div className="relative group w-full max-w-lg">
+                    <div className="absolute -inset-2 bg-gradient-to-r from-primary via-primary/70 to-primary rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity animate-pulse"></div>
                     <div className="relative bg-gradient-to-br from-card via-card/95 to-card/90 rounded-2xl p-4 shadow-2xl border-2 border-primary/20">
                       <div className="relative overflow-hidden rounded-xl">
                         <img 
                           src="/team-img.jpg"
                           alt="Equipe ORX Valley - Profissionais unidos pela transformação"
-                          className="w-full h-80 object-cover transition-transform duration-500 group-hover:scale-110"
+                          className="w-full h-52 sm:h-80 lg:h-96 object-cover object-center transition-transform duration-500 group-hover:scale-105"
+                          style={{ objectPosition: 'center 20%' }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-primary/30 via-transparent to-transparent"></div>
                         <div className="absolute bottom-4 left-4 right-4">
-                    
+                          {/* Espaço para conteúdo adicional se necessário */}
                         </div>
                       </div>
                     </div>
@@ -232,17 +233,17 @@ const AboutSection = () => {
                   <div className="space-y-2">
                     <Users className="w-8 h-8 text-primary mx-auto" />
                     <h3 className="font-semibold">Líderes</h3>
-                    <p className="text-sm text-muted-foreground">Formamos líderes de si mesmos</p>
+                    <p className="text-sm text-muted-foreground">Formamos líderes de si mesmos.</p>
                   </div>
                   <div className="space-y-2">
                     <Target className="w-8 h-8 text-primary mx-auto" />
                     <h3 className="font-semibold">Profissionais</h3>
-                    <p className="text-sm text-muted-foreground">Competentes pelo próprio esforço</p>
+                    <p className="text-sm text-muted-foreground">Competentes pelo próprio esforço.</p>
                   </div>
                   <div className="space-y-2">
                     <Star className="w-8 h-8 text-primary mx-auto" />
                     <h3 className="font-semibold">Cidadãos</h3>
-                    <p className="text-sm text-muted-foreground">Que deixam marca no mundo</p>
+                    <p className="text-sm text-muted-foreground">Que deixam marca no mundo.</p>
                   </div>
                 </div>
               </div>
@@ -266,31 +267,35 @@ const AboutSection = () => {
           </div>
         </section> */}
 
-        {/* Call to Action */}
-        <section className="py-16 px-4">
+       {/* Call to Action */}
+       <section className="py-16 px-4">
           <div className="container mx-auto">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-8 lg:p-12 shadow-xl border">
-                <h2 className="text-3xl lg:text-4xl font-bold mb-6">
+              <div className="bg-card/50 backdrop-blur-sm rounded-2xl p-6 sm:p-8 lg:p-12 shadow-xl border">
+                <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 sm:mb-6">
                   Bem-vindo ao <span className="text-gradient">ORX Valley</span>
                 </h2>
-                <p className="text-lg text-muted-foreground mb-8">
+                <p className="text-base sm:text-lg text-muted-foreground mb-6 sm:mb-8 leading-relaxed">
                   Se você acredita que é possível ser protagonista da sua própria história, 
                   que o trabalho e a integridade valem mais que qualquer atalho, e que a 
                   liberdade se conquista com responsabilidade — o ORX Valley é o seu lugar.
                 </p>
-                <div className="space-y-4">
-                  <p className="text-xl font-semibold text-primary">
+                <div className="space-y-4 sm:space-y-6">
+                  <p className="text-lg sm:text-xl font-semibold text-primary">
                     O futuro começa com a sua escolha.
                   </p>
-                  <Button 
-                    size="lg" 
-                    className="bg-orx-gradient hover:opacity-90 text-white text-lg px-8 py-4 rounded-xl shadow-lg"
-                    onClick={() => navigate('/auth')}
-                  >
-                    Participar da Comunidade
-                    <ArrowRight className="w-5 h-5 ml-2" />
-                  </Button>
+                  <div className="flex justify-center">
+                    <Button 
+                      size="lg" 
+                      className="bg-orx-gradient hover:opacity-90 text-white text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg w-full sm:w-auto max-w-sm transition-all duration-300 hover:shadow-xl"
+                      onClick={() => navigate('/auth')}
+                    >
+                      <span className="flex items-center justify-center">
+                        Participar da Comunidade
+                        <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 ml-2 flex-shrink-0" />
+                      </span>
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>

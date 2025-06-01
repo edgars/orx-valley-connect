@@ -22,7 +22,7 @@ const HeroSection = () => {
               <span className="text-gradient">Talentos</span>
             </h1>
             <p className="text-xl lg:text-2xl text-muted-foreground max-w-3xl mx-auto">
-              Comunidadee de tecnologia no Oeste do Pará (Oriximiná). 
+              Comunidade de tecnologia no Oeste do Pará (Oriximiná). 
               Participe de eventos, workshops e conecte-se com outros profissionais.
             </p>
           </div>

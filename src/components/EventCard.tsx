@@ -230,6 +230,15 @@ const EventCard = ({ event }: EventCardProps) => {
             <Eye className="w-4 h-4 mr-2" />
             Ver Detalhes
           </Button>
+        
+          <Button 
+            variant="outline" 
+            className="w-full"
+            onClick={generateCalendarEvent}
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Adicionar ao Calendário
+          </Button>
 
           {!isPastEvent && (
             <Button 
@@ -243,15 +252,6 @@ const EventCard = ({ event }: EventCardProps) => {
                registerMutation.isPending ? 'Inscrevendo...' : 'Inscrever-se'}
             </Button>
           )}
-          
-          <Button 
-            variant="outline" 
-            className="w-full"
-            onClick={generateCalendarEvent}
-          >
-            <Download className="w-4 h-4 mr-2" />
-            Adicionar ao Calendário
-          </Button>
         </div>
       </CardFooter>
     </Card>
