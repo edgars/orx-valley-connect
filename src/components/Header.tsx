@@ -286,7 +286,7 @@ const Header = () => {
               >
                 Home
               </NavLink>
-              <NavLink to="/membros" onClick={() => setIsMenuOpen(false)}>
+              <NavLink to="/comunidade" onClick={() => setIsMenuOpen(false)}>
                 Comunidade
               </NavLink>
               <NavLink to="/blog" onClick={() => setIsMenuOpen(false)}>
