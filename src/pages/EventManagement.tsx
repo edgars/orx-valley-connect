@@ -15,7 +15,7 @@ import AttendanceList from '@/components/AttendanceList';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, MapPin, Users, Plus, Award, Edit, UserCheck } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Edit, UserCheck, Clock, User } from 'lucide-react';
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
@@ -38,7 +38,6 @@ const EventManagement = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
-  const [showCertificateDialog, setShowCertificateDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -69,127 +68,174 @@ const EventManagement = () => {
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'presencial': return 'bg-purple-500';
+      case 'presencial': return 'bg-orange-500';
       case 'online': return 'bg-blue-500';
-      case 'hibrido': return 'bg-green-500';
+      case 'hibrido': return 'bg-purple-500';
       default: return 'bg-gray-500';
     }
   };
 
+  const getTypeName = (type: string) => {
+    switch (type) {
+      case 'presencial': return 'Presencial';
+      case 'online': return 'Online';
+      case 'hibrido': return 'Híbrido';
+      default: return type;
+    }
+  };
+
   const renderEventCard = (event: any) => (
-    <Card key={event.id} className="hover:shadow-lg transition-shadow">
-      <CardHeader>
-        <div className="flex justify-between items-start">
-          <div className="flex-1">
-            <CardTitle className="text-xl mb-2">{event.title}</CardTitle>
-            <div className="flex flex-wrap gap-2 mb-3">
-              <Badge className={`${getStatusColor(event.status)} text-white`}>
-                {event.status}
-              </Badge>
-              <Badge className={`${getTypeColor(event.type)} text-white`}>
-                {event.type}
-              </Badge>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button 
-              size="sm" 
-              variant="outline"
-              onClick={() => {
-                setSelectedEvent(event);
-                setShowEditDialog(true);
-              }}
-            >
-              <Edit className="w-4 h-4" />
-            </Button>
-            
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => {
-                setSelectedEvent(event);
-                setShowAttendanceDialog(true);
-              }}
-            >
-              <UserCheck className="w-4 h-4 mr-1" />
-              Presença
-            </Button>
-            
-            
-          </div>
+    <div
+      key={event.id}
+      className="bg-[#1a1a1a] rounded-xl overflow-hidden text-white relative group hover:scale-105 transition-transform duration-200"
+    >
+      {/* Imagem de fundo */}
+      <div className="relative h-48 overflow-hidden">
+        <img
+          src={event.image_url || "/orxvalley.white.svg"}
+          alt={event.title}
+          className="w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-black/60" />
+        
+        {/* Badges sobrepostos */}
+        <div className="absolute top-3 right-3 flex gap-2">
+          {/* Badge de status */}
+          <Badge className={`${getStatusColor(event.status)} text-white text-xs font-medium px-2 py-1`}>
+            {event.status}
+          </Badge>
+          
+          {/* Badge do tipo */}
+          <Badge className={`${getTypeColor(event.type)} text-white text-xs font-medium px-2 py-1`}>
+            {getTypeName(event.type)}
+          </Badge>
         </div>
-      </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+
+        {/* Botões de ação sobrepostos - SEMPRE VISÍVEIS */}
+        <div className="absolute top-3 left-3 flex gap-2">
+          <Button 
+            size="sm" 
+            variant="secondary"
+            className="h-8 w-8 p-0 bg-black/70 hover:bg-black/90 text-white"
+            onClick={() => {
+              setSelectedEvent(event);
+              setShowEditDialog(true);
+            }}
+          >
+            <Edit className="w-3 h-3" />
+          </Button>
+          
+          <Button
+            size="sm"
+            variant="secondary"
+            className="h-8 w-8 p-0 bg-black/70 hover:bg-black/90 text-white"
+            onClick={() => {
+              setSelectedEvent(event);
+              setShowAttendanceDialog(true);
+            }}
+          >
+            <UserCheck className="w-3 h-3" />
+          </Button>
+        </div>
+      </div>
+
+      {/* Conteúdo do card */}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-3 line-clamp-2 leading-tight">
+          {event.title}
+        </h3>
+
+        <div className="space-y-2 text-sm text-gray-300">
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <span>{format(new Date(event.date_time), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</span>
+            <Calendar className="w-4 h-4" />
+            <span>{format(new Date(event.date_time), "dd/MM/yyyy", { locale: ptBR })}</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-muted-foreground" />
-            <span>{event.location}</span>
+            <Clock className="w-4 h-4" />
+            <span>{format(new Date(event.date_time), "HH:mm", { locale: ptBR })}</span>
           </div>
           
           <div className="flex items-center gap-2">
-            <Users className="w-4 h-4 text-muted-foreground" />
+            <MapPin className="w-4 h-4" />
+            <span className="line-clamp-1">{event.location}</span>
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4" />
             <span>
               {event.current_participants}
               {event.max_participants && `/${event.max_participants}`} participantes
             </span>
           </div>
-        </div>
 
-        {event.image_url && (
-          <div className="mt-4">
-            <img
-              src={event.image_url}
-              alt={event.title}
-              className="w-full h-48 object-cover rounded-lg"
-            />
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          {event.workload && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>Carga horária: {event.workload} horas</span>
+            </div>
+          )}
+          
+          {event.speaker && (
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4" />
+              <span className="line-clamp-1">Palestrante: {event.speaker}</span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 
   const renderEventSection = (title: string, events: any[], emptyMessage: string) => {
-    if (events.length === 0) return null;
+    if (events.length === 0 && statusFilter === 'all' && !searchTerm) return null;
 
     return (
-      <div className="mb-8">
-        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          {title}
-          <Badge variant="secondary">{events.length}</Badge>
-        </h2>
-        <div className="grid gap-6">
-          {events.map(renderEventCard)}
-        </div>
-      </div>
+      <Card className="mb-8 bg-[#0a0a0a] border-gray-800">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-white flex items-center gap-2">
+            {title}
+            <Badge variant="secondary" className="bg-gray-700 text-white">
+              {events.length}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {events.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map(renderEventCard)}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>{emptyMessage}</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     );
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-[#0a0a0a]">
         <Header />
         <div className="container py-8">
-          <h1 className="text-3xl font-bold mb-8 text-gradient">Gestão de Eventos</h1>
-          <p>Carregando eventos...</p>
+          <h1 className="text-3xl font-bold mb-8 text-white mt-16">Gestão de Eventos</h1>
+          <p className="text-gray-400">Carregando eventos...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-[#0a0a0a]">
       <Header />
       <div className="container py-8">
         <div className="flex justify-between items-center mt-16 mb-6">
-          <h1 className="text-3xl font-bold text-gradient">Gestão de Eventos</h1>
+          <h1 className="text-3xl font-bold text-white">Gestão de Eventos</h1>
           <Button
             onClick={() => setShowCreateDialog(true)}
-            className="bg-orx-gradient hover:opacity-90"
+            className="bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white"
           >
             <Plus className="w-4 h-4 mr-2" />
             Criar Evento
@@ -197,7 +243,7 @@ const EventManagement = () => {
         </div>
 
         {/* Filtros */}
-        <Card className="mb-6">
+        <Card className="mb-6 bg-[#1a1a1a] border-gray-800">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -205,18 +251,19 @@ const EventManagement = () => {
                   placeholder="Buscar eventos..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="bg-[#0a0a0a] border-gray-700 text-white placeholder-gray-400"
                 />
               </div>
               <div>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-[#0a0a0a] border-gray-700 text-white">
                     <SelectValue placeholder="Filtrar por status" />
                   </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os Status</SelectItem>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="finalizado">Finalizado</SelectItem>
-                    <SelectItem value="cancelado">Cancelado</SelectItem>
+                  <SelectContent className="bg-[#1a1a1a] border-gray-700">
+                    <SelectItem value="all" className="text-white hover:bg-gray-700">Todos os Status</SelectItem>
+                    <SelectItem value="ativo" className="text-white hover:bg-gray-700">Ativo</SelectItem>
+                    <SelectItem value="finalizado" className="text-white hover:bg-gray-700">Finalizado</SelectItem>
+                    <SelectItem value="cancelado" className="text-white hover:bg-gray-700">Cancelado</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -227,27 +274,27 @@ const EventManagement = () => {
         {/* Estatísticas Rápidas */}
         {statusFilter === 'all' && !searchTerm && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-            <Card>
+            <Card className="bg-green-900/20 border-green-700">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600">{activeEvents.length}</div>
-                  <p className="text-sm text-muted-foreground">Eventos Ativos</p>
+                  <div className="text-2xl font-bold text-green-400">{activeEvents.length}</div>
+                  <p className="text-sm text-green-300">Eventos Ativos</p>
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-blue-900/20 border-blue-700">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-blue-600">{finishedEvents.length}</div>
-                  <p className="text-sm text-muted-foreground">Eventos Finalizados</p>
+                  <div className="text-2xl font-bold text-blue-400">{finishedEvents.length}</div>
+                  <p className="text-sm text-blue-300">Eventos Finalizados</p>
                 </div>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="bg-red-900/20 border-red-700">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-red-600">{cancelledEvents.length}</div>
-                  <p className="text-sm text-muted-foreground">Eventos Cancelados</p>
+                  <div className="text-2xl font-bold text-red-400">{cancelledEvents.length}</div>
+                  <p className="text-sm text-red-300">Eventos Cancelados</p>
                 </div>
               </CardContent>
             </Card>
@@ -265,14 +312,18 @@ const EventManagement = () => {
             </div>
           ) : (
             // Exibir lista única quando há filtros
-            <div className="grid gap-6">
-              {filteredEvents.map(renderEventCard)}
-            </div>
+            <Card className="bg-[#0a0a0a] border-gray-800">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {filteredEvents.map(renderEventCard)}
+                </div>
+              </CardContent>
+            </Card>
           )
         ) : (
-          <Card>
+          <Card className="bg-[#1a1a1a] border-gray-800">
             <CardContent className="py-12 text-center">
-              <p className="text-muted-foreground text-lg">
+              <p className="text-gray-400 text-lg">
                 {searchTerm || statusFilter !== 'all' 
                   ? 'Nenhum evento encontrado com os filtros aplicados.' 
                   : 'Nenhum evento criado ainda.'}
@@ -280,7 +331,7 @@ const EventManagement = () => {
               {!searchTerm && statusFilter === 'all' && (
                 <Button
                   onClick={() => setShowCreateDialog(true)}
-                  className="mt-4 bg-orx-gradient hover:opacity-90"
+                  className="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:opacity-90 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
                   Criar Primeiro Evento
@@ -309,15 +360,13 @@ const EventManagement = () => {
           />
 
           <Dialog open={showAttendanceDialog} onOpenChange={setShowAttendanceDialog}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[#1a1a1a] border-gray-700">
               <DialogHeader>
-                <DialogTitle>Lista de Presença - {selectedEvent.title}</DialogTitle>
+                <DialogTitle className="text-white">Lista de Presença - {selectedEvent.title}</DialogTitle>
               </DialogHeader>
               <AttendanceList event={selectedEvent} />
             </DialogContent>
           </Dialog>
-
-
         </>
       )}
     </div>

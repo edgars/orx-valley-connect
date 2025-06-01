@@ -1,4 +1,3 @@
-
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -7,6 +6,7 @@ export interface UserProfile {
   id: string;
   full_name?: string;
   username?: string;
+  email?: string;
   role: 'usuario' | 'administrador';
   status?: 'active' | 'blocked';
   bio?: string;
@@ -95,7 +95,6 @@ export const useUpdateUserStatus = () => {
 
   return useMutation({
     mutationFn: async ({ userId, status }: { userId: string; status: 'active' | 'blocked' }) => {
-      // Primeiro verificamos se a coluna status existe na tabela
       const { data, error } = await supabase
         .from('profiles')
         .select('status')
@@ -103,7 +102,6 @@ export const useUpdateUserStatus = () => {
         .limit(1);
 
       if (error && error.code === '42703') {
-        // Coluna não existe, vamos atualizar apenas o que é possível
         throw new Error('Funcionalidade de status não disponível no momento');
       }
 
@@ -129,6 +127,60 @@ export const useUpdateUserStatus = () => {
       toast({
         title: "Erro ao atualizar status",
         description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+};
+
+export const useDeleteUser = () => {
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  return useMutation({
+    mutationFn: async (userId: string) => {
+      const { error: registrationsError } = await supabase
+        .from('event_registrations')
+        .delete()
+        .eq('user_id', userId);
+
+      if (registrationsError) {
+        console.warn('Erro ao deletar inscrições:', registrationsError);
+      }
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userId);
+
+      if (profileError) throw profileError;
+
+
+      try {
+
+        const { error: authError } = await supabase.auth.admin.deleteUser(userId);
+        if (authError) {
+          console.warn('Erro ao deletar usuário da autenticação:', authError);
+        }
+      } catch (error) {
+        console.warn('Não foi possível deletar da autenticação:', error);
+      }
+
+      return { success: true };
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['users'] });
+      queryClient.invalidateQueries({ queryKey: ['current-user'] });
+      toast({
+        title: "Usuário excluído!",
+        description: "O usuário foi removido do sistema com sucesso.",
+      });
+    },
+    onError: (error: any) => {
+      console.error('Erro ao excluir usuário:', error);
+      toast({
+        title: "Erro ao excluir usuário",
+        description: error.message || "Ocorreu um erro inesperado ao tentar excluir o usuário.",
         variant: "destructive",
       });
     }
