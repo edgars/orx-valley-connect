@@ -15,22 +15,29 @@ interface AttendanceListProps {
 }
 
 const AttendanceList = ({ event }: AttendanceListProps) => {
-  const { data: registrations, isLoading, error } = useEventRegistrations(event.id);
+  const {
+    data: registrations,
+    isLoading,
+    error,
+  } = useEventRegistrations(event.id);
   const updateAttendanceMutation = useUpdateAttendance();
   const { toast } = useToast();
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
 
-  const handleAttendanceChange = async (registrationId: string, attended: boolean) => {
-    setUpdatingIds(prev => new Set(prev).add(registrationId));
-    
+  const handleAttendanceChange = async (
+    registrationId: string,
+    attended: boolean
+  ) => {
+    setUpdatingIds((prev) => new Set(prev).add(registrationId));
+
     try {
       await updateAttendanceMutation.mutateAsync({
         registrationId,
-        attended
+        attended,
       });
-      
+
       toast({
         title: attended ? "Presença marcada" : "Presença desmarcada",
         description: "Lista de presença atualizada com sucesso.",
@@ -42,7 +49,7 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
         variant: "destructive",
       });
     } finally {
-      setUpdatingIds(prev => {
+      setUpdatingIds((prev) => {
         const newSet = new Set(prev);
         newSet.delete(registrationId);
         return newSet;
@@ -124,13 +131,15 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">Nenhum participante inscrito ainda.</p>
+          <p className="text-muted-foreground">
+            Nenhum participante inscrito ainda.
+          </p>
         </CardContent>
       </Card>
     );
   }
 
-  const attendedCount = registrations.filter(reg => reg.attended).length;
+  const attendedCount = registrations.filter((reg) => reg.attended).length;
   const totalCount = registrations.length;
   const filteredCount = filteredRegistrations.length;
 

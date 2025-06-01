@@ -1,8 +1,7 @@
-
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe, Eye } from 'lucide-react';
+import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe, Eye, Clock, User } from 'lucide-react';
 import { Event } from '@/hooks/useEvents';
 import { useRegisterForEvent } from '@/hooks/useEvents';
 import { useCheckEventRegistration } from '@/hooks/useEventRegistrations';
@@ -51,7 +50,9 @@ const EventCard = ({ event }: EventCardProps) => {
 
   const generateCalendarEvent = () => {
     const startDate = new Date(event.date_time);
-    const endDate = new Date(startDate.getTime() + 2 * 60 * 60 * 1000);
+    // Usar workload se disponível, senão usar 2 horas como padrão
+    const eventDurationHours = event.workload || 4;
+    const endDate = new Date(startDate.getTime() + eventDurationHours * 60 * 60 * 1000);
     
     const formatDateForCalendar = (date: Date) => {
       return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -61,7 +62,7 @@ const EventCard = ({ event }: EventCardProps) => {
       title: event.title,
       start: formatDateForCalendar(startDate),
       end: formatDateForCalendar(endDate),
-      description: event.description,
+      description: `${event.description}${event.speaker ? `\n\nPalestrante: ${event.speaker}` : ''}${event.workload ? `\nCarga horária: ${event.workload} horas` : ''}`,
       location: event.location
     };
 
@@ -121,9 +122,9 @@ const EventCard = ({ event }: EventCardProps) => {
         {event.image_url ? (
           <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
         ) : (
-          <div className="flex items-center justify-center h-full">
-            <CalendarIcon className="w-16 h-16 text-primary/50" />
-          </div>
+       
+            <img src="/orxvalley.white.svg" alt="ORX Valley Logo" className="w-full h-full object-cover" />
+
         )}
         <Badge className={`absolute top-3 right-3 ${getTypeColor(event.type)}`}>
           {getTypeName(event.type)}
@@ -133,6 +134,8 @@ const EventCard = ({ event }: EventCardProps) => {
             Finalizado
           </Badge>
         )}
+        {/* Badge para carga horária */}
+       
       </div>
       
       <CardHeader>
@@ -150,10 +153,30 @@ const EventCard = ({ event }: EventCardProps) => {
             <CalendarIcon className="w-4 h-4 text-primary" />
             <span>{format(eventDate, "dd 'de' MMMM, yyyy - HH:mm", { locale: ptBR })}</span>
           </div>
+          
           <div className="flex items-center gap-2">
             <MapPinIcon className="w-4 h-4 text-primary" />
             <span className="line-clamp-1">{event.location}</span>
           </div>
+
+          {/* Carga horária */}
+          {event.workload && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4 text-primary" />
+              <span>Carga horária: {event.workload} horas</span>
+            </div>
+          )}
+
+          {/* Palestrante */}
+          {event.speaker && (
+            <div className="flex items-center gap-2">
+              <User className="w-4 h-4 text-primary" />
+              <span className="line-clamp-1">
+                <span className="font-medium">Palestrante:</span> {event.speaker}
+              </span>
+            </div>
+          )}
+          
           {(event.type === 'online' || event.type === 'hibrido') && event.stream_url && isRegistered && (
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
@@ -167,6 +190,7 @@ const EventCard = ({ event }: EventCardProps) => {
               </a>
             </div>
           )}
+          
           {event.max_participants && (
             <div className="flex items-center gap-2">
               <UsersIcon className="w-4 h-4 text-primary" />
@@ -175,16 +199,19 @@ const EventCard = ({ event }: EventCardProps) => {
               </span>
             </div>
           )}
+          
           {spotsLeft && spotsLeft > 0 && spotsLeft <= 10 && (
             <p className="text-amber-500 font-medium">
               Apenas {spotsLeft} vagas restantes!
             </p>
           )}
+          
           {isFull && (
             <p className="text-red-500 font-medium">
               Evento lotado
             </p>
           )}
+          
           {isRegistered && (
             <p className="text-green-500 font-medium">
               ✓ Você está inscrito neste evento
