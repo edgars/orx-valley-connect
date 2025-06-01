@@ -1,7 +1,7 @@
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
-import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe, Eye, Clock, User } from 'lucide-react';
+import { CalendarIcon, MapPinIcon, UsersIcon, Download, Globe, Eye, Clock, User, CheckCircle } from 'lucide-react';
 import { Event } from '@/hooks/useEvents';
 import { useRegisterForEvent } from '@/hooks/useEvents';
 import { useCheckEventRegistration } from '@/hooks/useEventRegistrations';
@@ -122,9 +122,7 @@ const EventCard = ({ event }: EventCardProps) => {
         {event.image_url ? (
           <img src={event.image_url} alt={event.title} className="w-full h-full object-cover" />
         ) : (
-       
-            <img src="/orxvalley.white.svg" alt="ORX Valley Logo" className="w-full h-full object-cover" />
-
+          <img src="/orxvalley.white.svg" alt="ORX Valley Logo" className="w-full h-full object-cover" />
         )}
         <Badge className={`absolute top-3 right-3 ${getTypeColor(event.type)}`}>
           {getTypeName(event.type)}
@@ -134,8 +132,6 @@ const EventCard = ({ event }: EventCardProps) => {
             Finalizado
           </Badge>
         )}
-        {/* Badge para carga horária */}
-       
       </div>
       
       <CardHeader>
@@ -213,8 +209,9 @@ const EventCard = ({ event }: EventCardProps) => {
           )}
           
           {isRegistered && (
-            <p className="text-green-500 font-medium">
-              ✓ Você está inscrito neste evento
+            <p className="text-green-600 font-medium flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 flex-shrink-0" />
+              Você está inscrito neste evento
             </p>
           )}
         </div>
@@ -240,15 +237,15 @@ const EventCard = ({ event }: EventCardProps) => {
             Adicionar ao Calendário
           </Button>
 
-          {!isPastEvent && (
+          {/* Botão de inscrição - só aparece se não estiver inscrito e não for evento passado */}
+          {!isPastEvent && !isRegistered && (
             <Button 
               className="w-full bg-orx-gradient hover:opacity-90 text-white"
               onClick={handleRegister}
-              disabled={!user || isFull || registerMutation.isPending || checkingRegistration || isRegistered}
+              disabled={!user || isFull || registerMutation.isPending || checkingRegistration}
             >
               {!user ? 'Faça login para se inscrever' : 
                isFull ? 'Evento lotado' :
-               isRegistered ? 'Já inscrito' :
                registerMutation.isPending ? 'Inscrevendo...' : 'Inscrever-se'}
             </Button>
           )}

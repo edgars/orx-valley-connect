@@ -74,6 +74,7 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
       speaker: formData.speaker
     };
 
+    console.log('Enviando dados do evento para atualização:', eventData);
     try {
       await updateEventMutation.mutateAsync(eventData);
       
