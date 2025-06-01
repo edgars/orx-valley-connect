@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Header from '@/components/Header';
 import ReactMarkdown from 'react-markdown';
+import QRCodeReader from '@/components/QRCodeReader'; // Import do componente que criamos
 import { 
   Calendar, 
   MapPin, 
@@ -15,7 +16,8 @@ import {
   Clock, 
   User,
   CheckCircle,
-  XCircle
+  XCircle,
+  QrCode
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -30,7 +32,7 @@ const EventDetails = () => {
   const { data: events, isLoading: eventsLoading } = useEvents();
   const { data: specificEvent, isLoading: specificEventLoading } = useEventById(id || '');
   const { data: userRegistrations, isLoading: registrationLoading } = useUserEventRegistrations();
-  const { data: isRegistered } = useCheckEventRegistration(id || '');
+  const { data: isRegistered, refetch: refetchRegistration } = useCheckEventRegistration(id || '');
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -57,6 +59,7 @@ const EventDetails = () => {
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event', id] });
+      refetchRegistration();
       toast({
         title: "Inscrição realizada!",
         description: "Você foi inscrito no evento com sucesso.",
@@ -89,6 +92,7 @@ const EventDetails = () => {
       queryClient.invalidateQueries({ queryKey: ['event-registration-check'] });
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event', id] });
+      refetchRegistration();
       toast({
         title: "Inscrição cancelada!",
         description: "Sua inscrição foi cancelada com sucesso.",
@@ -117,6 +121,13 @@ const EventDetails = () => {
     }
   };
 
+  // Callback para quando a presença for marcada via QR Code
+  const handleAttendanceMarked = () => {
+    // Atualizar queries relacionadas
+    queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
+    queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'ativo':
@@ -142,6 +153,16 @@ const EventDetails = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Verificar se o evento está acontecendo agora (para mostrar o leitor de QR)
+  const eventDate = new Date(event?.date_time || '');
+  const now = new Date();
+  const isEventHappening = event && 
+    eventDate <= now && 
+    eventDate.getTime() + (2 * 60 * 60 * 1000) > now.getTime(); // Evento + 2 horas
+
+  const isEventPast = eventDate < new Date();
+  const isMutating = registerMutation.isPending || unregisterMutation.isPending;
 
   // Loading - incluindo o carregamento do evento específico
   if (eventsLoading || specificEventLoading) {
@@ -183,10 +204,6 @@ const EventDetails = () => {
     );
   }
 
-  const eventDate = new Date(event.date_time);
-  const isEventPast = eventDate < new Date();
-  const isMutating = registerMutation.isPending || unregisterMutation.isPending;
-
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -221,6 +238,11 @@ const EventDetails = () => {
                   <Badge className={getTypeColor(event.type)}>
                     {event.type}
                   </Badge>
+                  {isEventHappening && (
+                    <Badge className="bg-red-500 text-white animate-pulse">
+                      Acontecendo agora
+                    </Badge>
+                  )}
                 </div>
 
                 <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
@@ -313,6 +335,16 @@ const EventDetails = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* QR Code Reader - Só aparece se o evento estiver acontecendo e o usuário estiver inscrito */}
+            {isEventHappening && user && isRegistered && (
+              <QRCodeReader
+                eventId={event.id}
+                userId={user.id}
+                isRegistered={isRegistered}
+                onAttendanceMarked={handleAttendanceMarked}
+              />
+            )}
+
             {/* Registration Card */}
             <Card>
               <CardHeader>
@@ -337,6 +369,19 @@ const EventDetails = () => {
                         </div>
                       )}
                     </div>
+
+                    {/* Aviso sobre marcação de presença */}
+                    {isRegistered && isEventHappening && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
+                        <div className="flex items-center gap-2 text-blue-700 mb-1">
+                          <QrCode className="w-4 h-4" />
+                          <span className="font-medium text-sm">Marque sua presença!</span>
+                        </div>
+                        <p className="text-xs text-blue-600">
+                          O evento está acontecendo agora. Use o leitor de QR Code acima para marcar sua presença.
+                        </p>
+                      </div>
+                    )}
 
                     {!isEventPast && event.status === 'ativo' && (
                       <Button
@@ -418,6 +463,35 @@ const EventDetails = () => {
                 </div>
               </CardContent>
             </Card>
+
+            {/* Instructions Card - Aparece quando o evento está prestes a começar */}
+            {isRegistered && !isEventPast && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Como marcar presença</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3 text-sm text-muted-foreground">
+                    <div className="flex gap-2">
+                      <span className="font-medium text-primary">1.</span>
+                      <span>Chegue ao local do evento no horário marcado</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-medium text-primary">2.</span>
+                      <span>Quando o evento começar, clique em "Marcar Presença"</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-medium text-primary">3.</span>
+                      <span>Escaneie o QR Code mostrado pelo organizador</span>
+                    </div>
+                    <div className="flex gap-2">
+                      <span className="font-medium text-primary">4.</span>
+                      <span>Sua presença será confirmada automaticamente</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>
