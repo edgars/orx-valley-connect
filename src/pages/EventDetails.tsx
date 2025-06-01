@@ -464,7 +464,7 @@ const EventDetails = () => {
               </CardContent>
             </Card>
 
-            {/* Instructions Card - Aparece quando o evento está prestes a começar */}
+            {/*Instructions Card - Aparece quando o evento está prestes a começar */}
             {isRegistered && !isEventPast && (
               <Card>
                 <CardHeader>
