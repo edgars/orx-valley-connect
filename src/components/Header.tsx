@@ -267,7 +267,7 @@ const Header = () => {
                         </svg>
                         Certificados
                       </Link>
-                      <Link
+                     {/*  <Link
                         to="/configuracoes"
                         className="flex items-center px-4 py-2 text-gray-300 hover:bg-gray-700 hover:text-white transition-colors"
                         onClick={() => setIsProfileDropdownOpen(false)}
@@ -292,7 +292,7 @@ const Header = () => {
                           />
                         </svg>
                         Configurações
-                      </Link>
+                      </Link> */}
                       <hr className="my-2 border-gray-600" />
                       <button
                         onClick={() => {
@@ -467,7 +467,7 @@ const Header = () => {
                         >
                           Certificados
                         </Link>
-                        <Link
+                        {/* <Link
                           to="/configuracoes"
                           className="block text-gray-400 hover:text-white transition-colors py-1"
                           onClick={() => {
@@ -476,7 +476,7 @@ const Header = () => {
                           }}
                         >
                           Configurações
-                        </Link>
+                        </Link> */}
                       </div>
                     )}
                     
