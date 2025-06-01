@@ -38,7 +38,7 @@ const CreateEventDialog = ({ open, onClose }: CreateEventDialogProps) => {
     max_participants: "",
     image_url: "",
     stream_url: "",
-    workload: "",
+    workload: "", // Initially empty string
     speaker: "",
   });
 
@@ -53,7 +53,8 @@ const CreateEventDialog = ({ open, onClose }: CreateEventDialogProps) => {
       max_participants: formData.max_participants
         ? parseInt(formData.max_participants)
         : undefined,
-      status: "ativo" as const,
+      workload: formData.workload ? parseInt(formData.workload) : undefined, // Parse workload as number
+      status: "ativo" as const, // Event status
     };
 
     try {

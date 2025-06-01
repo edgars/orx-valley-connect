@@ -24,6 +24,7 @@ import { ptBR } from 'date-fns/locale';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useState } from 'react';
 
 const EventDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +36,9 @@ const EventDetails = () => {
   const { data: isRegistered, refetch: refetchRegistration } = useCheckEventRegistration(id || '');
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  
+  // Estado para controlar se o modal QR está aberto
+  const [isQRModalOpen, setIsQRModalOpen] = useState(false);
 
   // Prioriza o evento específico, senão busca na lista de eventos ativos
   const event = specificEvent || events?.find(e => e.id === id);
@@ -123,9 +127,28 @@ const EventDetails = () => {
 
   // Callback para quando a presença for marcada via QR Code
   const handleAttendanceMarked = () => {
+    // Fechar o modal QR
+    setIsQRModalOpen(false);
+    
     // Atualizar queries relacionadas
     queryClient.invalidateQueries({ queryKey: ['user-event-registrations'] });
     queryClient.invalidateQueries({ queryKey: ['event-registrations'] });
+    
+    // Mostrar toast de sucesso
+    toast({
+      title: "Presença confirmada!",
+      description: "Sua presença no evento foi marcada com sucesso.",
+    });
+  };
+
+  // Função para abrir o modal QR
+  const handleOpenQRModal = () => {
+    setIsQRModalOpen(true);
+  };
+
+  // Função para fechar o modal QR
+  const handleCloseQRModal = () => {
+    setIsQRModalOpen(false);
   };
 
   const getStatusColor = (status: string) => {
@@ -207,27 +230,27 @@ const EventDetails = () => {
   return (
     <div className="min-h-screen bg-background">
       <Header />
-      <div className="container py-8">
+      <div className="container py-4 sm:py-8 px-4">
         <Button 
           variant="ghost" 
           onClick={() => navigate('/')}
-          className="mb-6"
+          className="mb-4 sm:mb-6"
         >
           <ArrowLeft className="h-4 w-4 mr-2" />
           Voltar
         </Button>
 
-        <div className="grid gap-8 lg:grid-cols-3">
+        <div className="grid gap-6 sm:gap-8 lg:grid-cols-3">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Header Card */}
             <Card>
-              <CardContent className="p-6">
+              <CardContent className="p-4 sm:p-6">
                 {event.image_url && (
                   <img
                     src={event.image_url}
                     alt={event.title}
-                    className="w-full h-64 object-cover rounded-lg mb-6"
+                    className="w-full h-48 sm:h-64 object-cover rounded-lg mb-4 sm:mb-6"
                   />
                 )}
                 
@@ -245,30 +268,30 @@ const EventDetails = () => {
                   )}
                 </div>
 
-                <h1 className="text-3xl font-bold mb-4">{event.title}</h1>
+                <h1 className="text-2xl sm:text-3xl font-bold mb-4">{event.title}</h1>
                 
-                <div className="grid gap-4 md:grid-cols-2 mb-6">
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Calendar className="h-4 w-4" />
+                <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 mb-4 sm:mb-6">
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                    <Calendar className="h-4 w-4 flex-shrink-0" />
                     <span>
                       {format(eventDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                    <Clock className="h-4 w-4 flex-shrink-0" />
                     <span>
                       {format(eventDate, "HH:mm", { locale: ptBR })}
                     </span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <MapPin className="h-4 w-4" />
-                    <span>{event.location}</span>
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                    <MapPin className="h-4 w-4 flex-shrink-0" />
+                    <span className="truncate">{event.location}</span>
                   </div>
                   
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <Users className="h-4 w-4" />
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm sm:text-base">
+                    <Users className="h-4 w-4 flex-shrink-0" />
                     <span>
                       {event.current_participants}
                       {event.max_participants && ` / ${event.max_participants}`} participantes
@@ -277,17 +300,17 @@ const EventDetails = () => {
                 </div>
 
                 <div className="prose prose-sm max-w-none">
-                  <h3>Sobre o evento</h3>
+                  <h3 className="text-lg sm:text-xl">Sobre o evento</h3>
                   <div className="markdown-content">
                     <ReactMarkdown
                       components={{
-                        h1: ({ children }) => <h1 className="text-2xl font-bold mt-6 mb-4 text-foreground">{children}</h1>,
-                        h2: ({ children }) => <h2 className="text-xl font-bold mt-5 mb-3 text-foreground">{children}</h2>,
-                        h3: ({ children }) => <h3 className="text-lg font-bold mt-4 mb-2 text-foreground">{children}</h3>,
-                        p: ({ children }) => <p className="mb-4 leading-relaxed text-muted-foreground">{children}</p>,
+                        h1: ({ children }) => <h1 className="text-xl sm:text-2xl font-bold mt-6 mb-4 text-foreground">{children}</h1>,
+                        h2: ({ children }) => <h2 className="text-lg sm:text-xl font-bold mt-5 mb-3 text-foreground">{children}</h2>,
+                        h3: ({ children }) => <h3 className="text-base sm:text-lg font-bold mt-4 mb-2 text-foreground">{children}</h3>,
+                        p: ({ children }) => <p className="mb-4 leading-relaxed text-muted-foreground text-sm sm:text-base">{children}</p>,
                         ul: ({ children }) => <ul className="list-disc pl-6 mb-4 space-y-1">{children}</ul>,
                         ol: ({ children }) => <ol className="list-decimal pl-6 mb-4 space-y-1">{children}</ol>,
-                        li: ({ children }) => <li className="text-muted-foreground">{children}</li>,
+                        li: ({ children }) => <li className="text-muted-foreground text-sm sm:text-base">{children}</li>,
                         a: ({ children, href }) => <a href={href} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">{children}</a>,
                         code: ({ children }) => <code className="bg-muted px-1 py-0.5 rounded text-sm">{children}</code>,
                         pre: ({ children }) => <pre className="bg-muted p-4 rounded-lg overflow-x-auto mb-4">{children}</pre>,
@@ -304,13 +327,13 @@ const EventDetails = () => {
             {/* Additional Information */}
             <Card>
               <CardHeader>
-                <CardTitle>Informações Adicionais</CardTitle>
+                <CardTitle className="text-lg sm:text-xl">Informações Adicionais</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2">Requisitos</h4>
-                    <p className="text-muted-foreground">
+                    <h4 className="font-semibold mb-2 text-sm sm:text-base">Requisitos</h4>
+                    <p className="text-muted-foreground text-sm sm:text-base">
                       {event.type === 'online' 
                         ? 'Acesso à internet e dispositivo com navegador atualizado.'
                         : event.type === 'hibrido'
@@ -322,8 +345,8 @@ const EventDetails = () => {
                   
                   {event.type !== 'presencial' && (
                     <div>
-                      <h4 className="font-semibold mb-2">Link de Acesso</h4>
-                      <p className="text-muted-foreground">
+                      <h4 className="font-semibold mb-2 text-sm sm:text-base">Link de Acesso</h4>
+                      <p className="text-muted-foreground text-sm sm:text-base">
                         O link para participação online será enviado por email aos inscritos próximo ao evento.
                       </p>
                     </div>
@@ -334,9 +357,36 @@ const EventDetails = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* QR Code Reader - Só aparece se o evento estiver acontecendo e o usuário estiver inscrito */}
-            {isEventHappening && user && isRegistered && (
+            {isEventHappening && user && isRegistered && !isQRModalOpen && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <QrCode className="h-5 w-5" />
+                    Marcar Presença
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      O evento está acontecendo agora! Clique no botão abaixo para escanear o QR Code e marcar sua presença.
+                    </p>
+                    <Button 
+                      onClick={handleOpenQRModal}
+                      className="w-full bg-orx-gradient hover:opacity-90 text-white"
+                      size="lg"
+                    >
+                      <QrCode className="w-4 h-4 mr-2" />
+                      Escanear QR Code
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* QR Code Reader Modal - Renderizado condicionalmente */}
+            {isQRModalOpen && isEventHappening && user && isRegistered && (
               <QRCodeReader
                 eventId={event.id}
                 userId={user.id}
@@ -348,7 +398,7 @@ const EventDetails = () => {
             {/* Registration Card */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+                <CardTitle className="flex items-center gap-2 text-lg">
                   <User className="h-5 w-5" />
                   Inscrição
                 </CardTitle>
@@ -360,25 +410,25 @@ const EventDetails = () => {
                       {isRegistered ? (
                         <div className="flex items-center justify-center gap-2 text-green-600 mb-4">
                           <CheckCircle className="h-5 w-5" />
-                          <span className="font-medium">Você está inscrito!</span>
+                          <span className="font-medium text-sm sm:text-base">Você está inscrito!</span>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center gap-2 text-muted-foreground mb-4">
                           <XCircle className="h-5 w-5" />
-                          <span>Você não está inscrito</span>
+                          <span className="text-sm sm:text-base">Você não está inscrito</span>
                         </div>
                       )}
                     </div>
 
                     {/* Aviso sobre marcação de presença */}
-                    {isRegistered && isEventHappening && (
+                    {isRegistered && isEventHappening && !isQRModalOpen && (
                       <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg mb-4">
                         <div className="flex items-center gap-2 text-blue-700 mb-1">
-                          <QrCode className="w-4 h-4" />
+                          <QrCode className="w-4 h-4 flex-shrink-0" />
                           <span className="font-medium text-sm">Marque sua presença!</span>
                         </div>
                         <p className="text-xs text-blue-600">
-                          O evento está acontecendo agora. Use o leitor de QR Code acima para marcar sua presença.
+                          O evento está acontecendo agora. Use o botão "Escanear QR Code" acima para marcar sua presença.
                         </p>
                       </div>
                     )}
@@ -389,6 +439,7 @@ const EventDetails = () => {
                         disabled={isMutating || (!isRegistered && !canRegister)}
                         className="w-full"
                         variant={isRegistered ? "outline" : "default"}
+                        size="lg"
                       >
                         {isMutating
                           ? "Processando..."
@@ -402,31 +453,32 @@ const EventDetails = () => {
                     )}
 
                     {(isEventPast || event.status === 'finalizado') && (
-                      <div className="text-center text-muted-foreground">
+                      <div className="text-center text-muted-foreground text-sm">
                         Este evento já foi finalizado
                       </div>
                     )}
 
                     {event.status === 'cancelado' && (
-                      <div className="text-center text-red-600">
+                      <div className="text-center text-red-600 text-sm">
                         Este evento foi cancelado
                       </div>
                     )}
 
                     {event.status !== 'ativo' && event.status !== 'finalizado' && event.status !== 'cancelado' && (
-                      <div className="text-center text-muted-foreground">
+                      <div className="text-center text-muted-foreground text-sm">
                         Inscrições não disponíveis
                       </div>
                     )}
                   </div>
                 ) : (
                   <div className="text-center space-y-4">
-                    <p className="text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       Faça login para se inscrever no evento
                     </p>
                     <Button 
                       onClick={() => navigate('/auth')}
                       className="w-full"
+                      size="lg"
                     >
                       Fazer Login
                     </Button>
@@ -438,10 +490,10 @@ const EventDetails = () => {
             {/* Event Stats */}
             <Card>
               <CardHeader>
-                <CardTitle>Estatísticas</CardTitle>
+                <CardTitle className="text-lg">Estatísticas</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
+                <div className="space-y-3 text-sm">
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Participantes:</span>
                     <span className="font-medium">{event.current_participants}</span>
@@ -468,24 +520,24 @@ const EventDetails = () => {
             {isRegistered && !isEventPast && (
               <Card>
                 <CardHeader>
-                  <CardTitle>Como marcar presença</CardTitle>
+                  <CardTitle className="text-lg">Como marcar presença</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3 text-sm text-muted-foreground">
                     <div className="flex gap-2">
-                      <span className="font-medium text-primary">1.</span>
+                      <span className="font-medium text-primary flex-shrink-0">1.</span>
                       <span>Chegue ao local do evento no horário marcado</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="font-medium text-primary">2.</span>
-                      <span>Quando o evento começar, clique em "Marcar Presença"</span>
+                      <span className="font-medium text-primary flex-shrink-0">2.</span>
+                      <span>Quando o evento começar, clique em "Escanear QR Code"</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="font-medium text-primary">3.</span>
+                      <span className="font-medium text-primary flex-shrink-0">3.</span>
                       <span>Escaneie o QR Code mostrado pelo organizador</span>
                     </div>
                     <div className="flex gap-2">
-                      <span className="font-medium text-primary">4.</span>
+                      <span className="font-medium text-primary flex-shrink-0">4.</span>
                       <span>Sua presença será confirmada automaticamente</span>
                     </div>
                   </div>

@@ -303,6 +303,7 @@ const EventManagement = () => {
             onClose={() => {
               setShowEditDialog(false);
               setSelectedEvent(null);
+              document.body.style.overflow = 'auto'; 
             }}
             event={selectedEvent}
           />
