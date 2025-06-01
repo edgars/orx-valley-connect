@@ -6,7 +6,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import Header from "@/components/Header";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import { BookOpen, List } from "lucide-react";
+import { BookOpen, List, History, Calendar, Clock, MapPin, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/Footer";
 import { useEvents } from "@/hooks/useEvents";
@@ -50,29 +50,32 @@ const MyEvents = () => {
     );
   }
 
-  const myRegisteredEvents =
-    registrations?.map((reg) => reg.events).filter(Boolean) || [];
-  const myRegisteredEventIds = new Set(
-    myRegisteredEvents.map((event) => event.id)
-  );
+  const myRegisteredEvents = registrations?.map((reg) => reg.events).filter(Boolean) || [];
+  const myRegisteredEventIds = new Set(myRegisteredEvents.map((event) => event.id));
 
-  const availableEvents =
-    allEvents?.filter(
-      (event) =>
-        !myRegisteredEventIds.has(event.id) &&
-        new Date(event.date_time) > new Date()
-    ) || [];
+  // Separar eventos por data (futuro vs passado)
+  const now = new Date();
+  const upcomingEvents = myRegisteredEvents.filter(event => new Date(event.date_time) > now);
+  const pastEvents = myRegisteredEvents.filter(event => new Date(event.date_time) <= now);
 
-  const renderEventCard = (event: any) => {
+  const availableEvents = allEvents?.filter(
+    (event) =>
+      !myRegisteredEventIds.has(event.id) &&
+      new Date(event.date_time) > new Date()
+  ) || [];
+
+  const renderEventCard = (event: any, isPast = false) => {
     const maxParticipants = event.max_participants || 0;
     const currentParticipants = event.current_participants || 0;
-    const remainingSpots =
-      maxParticipants > 0 ? maxParticipants - currentParticipants : null;
+    const remainingSpots = maxParticipants > 0 ? maxParticipants - currentParticipants : null;
+    const eventDate = new Date(event.date_time);
 
     return (
       <div
         key={event.id}
-        className="bg-[#111] rounded-xl shadow-md border border-neutral-800 overflow-hidden text-white relative"
+        className={`bg-[#111] rounded-xl shadow-md border border-neutral-800 overflow-hidden text-white relative ${
+          isPast ? 'opacity-80' : ''
+        }`}
       >
         <div className="relative h-40 overflow-hidden">
           <img
@@ -81,7 +84,14 @@ const MyEvents = () => {
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/50" />
-          <div className="absolute top-3 right-3">
+          
+          {/* Badges */}
+          <div className="absolute top-3 right-3 flex gap-2">
+            {isPast && (
+              <Badge className="bg-gray-600 text-white text-xs font-semibold px-2 py-1 rounded-full">
+                Finalizado
+              </Badge>
+            )}
             <Badge
               className={`
               text-white text-xs font-semibold px-3 py-1 rounded-full border-0
@@ -96,21 +106,36 @@ const MyEvents = () => {
         </div>
 
         <div className="p-5">
-          <h3 className="text-lg font-semibold leading-snug">{event.title}</h3>
+          <h3 className="text-lg font-semibold leading-snug line-clamp-2">{event.title}</h3>
 
-          <div className="mt-2 text-sm text-gray-300 space-y-1">
-            <div>
-              {format(new Date(event.date_time), "dd 'de' MMMM, yyyy - HH:mm", {
-                locale: ptBR,
-              })}
+          <div className="mt-3 space-y-2 text-sm text-gray-300">
+            <div className="flex items-center gap-2">
+              <Calendar className="w-4 h-4" />
+              {format(eventDate, "dd 'de' MMMM, yyyy", { locale: ptBR })}
             </div>
-            <div>{event.location}</div>
-            <div>
-              {currentParticipants}/{maxParticipants} participantes
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              {format(eventDate, "HH:mm", { locale: ptBR })}
             </div>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-4 h-4" />
+              <span className="line-clamp-1">{event.location}</span>
+            </div>
+            {event.workload && (
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                Carga horária: {event.workload} horas
+              </div>
+            )}
+            {event.speaker && (
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4" />
+                <span className="line-clamp-1">Palestrante: {event.speaker}</span>
+              </div>
+            )}
           </div>
 
-          {remainingSpots !== null && remainingSpots > 0 && (
+          {!isPast && remainingSpots !== null && remainingSpots > 0 && (
             <div className="flex items-center justify-center">
               <p className="text-yellow-400 font-semibold text-sm mt-3">
                 Apenas {remainingSpots} vaga{remainingSpots !== 1 ? "s" : ""}{" "}
@@ -127,19 +152,16 @@ const MyEvents = () => {
             >
               Ver Detalhes
             </Button>
-            {/*  <Button
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              onClick={() => console.log("Inscrever-se clicado")}
-            >
-              Inscrever-se
-            </Button>
-            <Button
-              variant="outline"
-              className="w-full border border-neutral-600 bg-transparent text-white hover:bg-white/10"
-              onClick={() => console.log("Adicionar ao calendário")}
-            >
-              Adicionar ao Calendário
-            </Button> */}
+            
+            {isPast && event.status === 'finalizado' && (
+              <Button
+                className="w-full bg-green-600 hover:bg-green-700 text-white"
+                onClick={() => navigate('/certificados')}
+              >
+                <Award className="w-4 h-4 mr-2" />
+                Ver Certificado
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -153,49 +175,91 @@ const MyEvents = () => {
         <h1 className="text-3xl font-bold mb-8 text-gradient">Meus Eventos</h1>
 
         <div className="grid gap-8">
+          {/* Próximos Eventos */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BookOpen className="w-5 h-5" />
-                Minhas Inscrições
+                Próximos Eventos
+                {upcomingEvents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {upcomingEvents.length}
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {myRegisteredEvents.length === 0 ? (
-                <p className="text-muted-foreground">
-                  Você ainda não se inscreveu em nenhum evento.
-                </p>
+              {upcomingEvents.length === 0 ? (
+                <div className="text-center py-8">
+                  <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-muted-foreground text-lg mb-2">
+                    Nenhum evento próximo
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Você não tem eventos agendados no momento.
+                  </p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {registrations?.map((registration) => {
-                    const event = registration.events;
-                    if (!event) return null;
-                    return renderEventCard(event);
-                  })}
+                  {upcomingEvents.map((event) => renderEventCard(event, false))}
                 </div>
               )}
             </CardContent>
           </Card>
 
+          {/* Eventos Disponíveis */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <List className="w-5 h-5" />
-                Todos os disponíveis
+                Eventos Disponíveis
+                {availableEvents.length > 0 && (
+                  <Badge variant="secondary" className="ml-2">
+                    {availableEvents.length}
+                  </Badge>
+                )}
               </CardTitle>
             </CardHeader>
             <CardContent>
               {availableEvents.length === 0 ? (
-                <p className="text-muted-foreground">
-                  Não há eventos disponíveis para inscrição no momento.
-                </p>
+                <div className="text-center py-8">
+                  <List className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                  <p className="text-muted-foreground text-lg mb-2">
+                    Nenhum evento disponível
+                  </p>
+                  <p className="text-muted-foreground text-sm">
+                    Não há eventos disponíveis para inscrição no momento.
+                  </p>
+                </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {availableEvents.map((event) => renderEventCard(event))}
+                  {availableEvents.map((event) => renderEventCard(event, false))}
                 </div>
               )}
             </CardContent>
           </Card>
+
+               {/* Histórico de Eventos */}
+          {pastEvents.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <History className="w-5 h-5" />
+                  Eventos Anteriores
+                  <Badge variant="secondary" className="ml-2">
+                    {pastEvents.length}
+                  </Badge>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {pastEvents
+                    .sort((a, b) => new Date(b.date_time).getTime() - new Date(a.date_time).getTime())
+                    .map((event) => renderEventCard(event, true))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
       <Footer />
