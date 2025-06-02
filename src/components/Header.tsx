@@ -133,14 +133,14 @@ const Header = () => {
   }) => {
     const isActive = isActiveTab(to || href);
     const baseClasses =
-      "relative text-gray-300 hover:text-white transition-colors pb-1";
+      "relative text-gray-300 hover:text-white transition-colors pb-2";
     const activeClasses = isActive ? "text-white" : "";
 
     const linkContent = (
       <span className={`${baseClasses} ${activeClasses}`}>
         {children}
         {isActive && (
-          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full"></span>
+          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#fff] rounded-full"></span>
         )}
       </span>
     );
@@ -175,9 +175,7 @@ const Header = () => {
                   alt="ORX Valley Logo"
                   className="h-8 w-auto"
                 />
-                <span className="text-white text-xl font-semibold">
-                  ORX Valley
-                </span>
+                
               </button>
             ) : (
               <Link to="/" className="flex items-center space-x-2">

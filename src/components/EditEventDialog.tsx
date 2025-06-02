@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useUpdateEvent, Event } from '@/hooks/useEvents';
-import { Calendar, MapPin, Users, Globe, Clock, Mic } from 'lucide-react';
+import { Calendar, MapPin, Users, Globe, Clock, Mic, Trash2, AlertTriangle } from 'lucide-react';
 import MDEditor from '@uiw/react-md-editor';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQueryClient, useMutation } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 import DatePicker from "react-datepicker";
 import { ptBR } from "date-fns/locale";
@@ -34,12 +36,64 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
     speaker: ''
   });
 
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
   const updateEventMutation = useUpdateEvent();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  // Mutation para excluir evento
+  const deleteEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      // Primeiro, verificar se há inscrições
+      const { data: registrations, error: checkError } = await supabase
+        .from('event_registrations')
+        .select('id')
+        .eq('event_id', eventId);
+
+      if (checkError) throw checkError;
+
+      if (registrations && registrations.length > 0) {
+        // Se há inscrições, deletar primeiro
+        const { error: deleteRegistrationsError } = await supabase
+          .from('event_registrations')
+          .delete()
+          .eq('event_id', eventId);
+
+        if (deleteRegistrationsError) throw deleteRegistrationsError;
+      }
+
+      // Deletar o evento
+      const { error: deleteEventError } = await supabase
+        .from('events')
+        .delete()
+        .eq('id', eventId);
+
+      if (deleteEventError) throw deleteEventError;
+    },
+    onSuccess: () => {
+      // Invalidar queries para atualizar a lista
+      queryClient.invalidateQueries({ queryKey: ['all-events'] });
+      queryClient.invalidateQueries({ queryKey: ['events'] });
+      
+      toast({
+        title: "Evento excluído!",
+        description: "O evento foi excluído com sucesso.",
+      });
+      
+      handleClose();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao excluir evento",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
 
   useEffect(() => {
     if (event) {
-      console.log('Carregando evento para edição:', event);
       setFormData({
         title: event.title,
         description: event.description,
@@ -74,7 +128,6 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
       speaker: formData.speaker
     };
 
-    console.log('Enviando dados do evento para atualização:', eventData);
     try {
       await updateEventMutation.mutateAsync(eventData);
       
@@ -83,11 +136,15 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
       queryClient.invalidateQueries({ queryKey: ['events'] });
       queryClient.invalidateQueries({ queryKey: ['event', event.id] });
       
-      onClose();
-      // Força a remoção do overflow hidden do body
-      document.body.style.overflow = 'auto';
+      handleClose();
     } catch (error) {
       console.error('Erro ao atualizar evento:', error);
+    }
+  };
+
+  const handleDeleteEvent = () => {
+    if (event) {
+      deleteEventMutation.mutate(event.id);
     }
   };
 
@@ -100,17 +157,55 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
   };
 
   const handleClose = () => {
+    setShowDeleteConfirm(false);
     onClose();
     // Força a remoção do overflow hidden do body
     document.body.style.overflow = 'auto';
   };
 
-  return (
-    <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto">
+  // Modal de confirmação de exclusão
+  const DeleteConfirmDialog = () => (
+    <Dialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+      <DialogContent className="max-w-md z-[60]">
         <DialogHeader>
-          <DialogTitle>Editar Evento</DialogTitle>
+          <DialogTitle className="text-lg font-semibold">
+            Excluir evento
+          </DialogTitle>
+          <DialogDescription className="text-sm text-muted-foreground mt-2">
+            Tem certeza que deseja excluir "{event?.title}"?
+            <br />
+            <span className="text-red-600 font-medium mt-2 block">
+              Esta ação não pode ser desfeita.
+            </span>
+          </DialogDescription>
         </DialogHeader>
+        <DialogFooter className="gap-2 mt-6">
+          <Button
+            variant="outline"
+            onClick={() => setShowDeleteConfirm(false)}
+            disabled={deleteEventMutation.isPending}
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleDeleteEvent}
+            disabled={deleteEventMutation.isPending}
+            variant="destructive"
+          >
+            {deleteEventMutation.isPending ? 'Excluindo...' : 'Excluir'}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  return (
+    <>
+      <Dialog open={open} onOpenChange={handleClose}>
+        <DialogContent className="max-w-5xl max-h-[95vh] overflow-y-auto z-50">
+          <DialogHeader>
+            <DialogTitle>Editar Evento</DialogTitle>
+          </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -328,6 +423,23 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
                   data-color-mode="dark"
                 />
               </div>
+              
+              {/* Botão de excluir - abaixo da descrição */}
+              <div className="mt-4 pt-4 border-t border-gray-200">
+                <Button
+                  type="button"
+                  variant="destructive"
+                  onClick={() => setShowDeleteConfirm(true)}
+                  className="bg-red-600 hover:bg-red-700 text-white flex items-center gap-2 w-full"
+                  disabled={updateEventMutation.isPending || deleteEventMutation.isPending}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Excluir Evento
+                </Button>
+                <p className="text-xs text-gray-500 mt-2 text-center">
+                  Esta ação não pode ser desfeita
+                </p>
+              </div>
             </div>
           </div>
 
@@ -337,13 +449,14 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
               variant="outline"
               onClick={handleClose}
               className="flex-1"
+              disabled={updateEventMutation.isPending || deleteEventMutation.isPending}
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              disabled={updateEventMutation.isPending}
-              className="flex-1 bg-orx-gradient hover:opacity-90"
+              disabled={updateEventMutation.isPending || deleteEventMutation.isPending}
+              className="flex-1 bg-orx-gradient hover:opacity-90 px-6"
             >
               {updateEventMutation.isPending ? "Salvando..." : "Salvar Alterações"}
             </Button>
@@ -351,6 +464,10 @@ const EditEventDialog = ({ open, onClose, event }: EditEventDialogProps) => {
         </form>
       </DialogContent>
     </Dialog>
+
+    {/* Modal de confirmação de exclusão sobreposto */}
+    <DeleteConfirmDialog />
+  </>
   );
 };
 

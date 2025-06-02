@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
@@ -19,6 +19,7 @@ import { Calendar, MapPin, Users, Plus, Edit, UserCheck, Clock, User } from 'luc
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
+  const queryClient = useQueryClient();
   
   // Hook para buscar TODOS os eventos (não apenas ativos)
   const { data: allEvents, isLoading } = useQuery({
@@ -87,7 +88,11 @@ const EventManagement = () => {
   const renderEventCard = (event: any) => (
     <div
       key={event.id}
-      className="bg-[#1a1a1a] rounded-xl overflow-hidden text-white relative group hover:scale-105 transition-transform duration-200"
+      className="bg-[#1a1a1a] rounded-xl overflow-hidden text-white relative group hover:scale-105 transition-transform duration-200 cursor-pointer"
+      onClick={() => {
+        setSelectedEvent(event);
+        setShowEditDialog(true);
+      }}
     >
       {/* Imagem de fundo */}
       <div className="relative h-48 overflow-hidden">
@@ -111,25 +116,14 @@ const EventManagement = () => {
           </Badge>
         </div>
 
-        {/* Botões de ação sobrepostos - SEMPRE VISÍVEIS */}
-        <div className="absolute top-3 left-3 flex gap-2">
-          <Button 
-            size="sm" 
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-black/70 hover:bg-black/90 text-white"
-            onClick={() => {
-              setSelectedEvent(event);
-              setShowEditDialog(true);
-            }}
-          >
-            <Edit className="w-3 h-3" />
-          </Button>
-          
+        {/* Botão de presença sobreposto */}
+        <div className="absolute top-3 left-3">
           <Button
             size="sm"
             variant="secondary"
             className="h-8 w-8 p-0 bg-black/70 hover:bg-black/90 text-white"
-            onClick={() => {
+            onClick={(e) => {
+              e.stopPropagation(); // Previne o clique no card
               setSelectedEvent(event);
               setShowAttendanceDialog(true);
             }}
@@ -182,6 +176,11 @@ const EventManagement = () => {
               <span className="line-clamp-1">Palestrante: {event.speaker}</span>
             </div>
           )}
+        </div>
+
+        {/* Indicador visual de que o card é clicável */}
+        <div className="absolute bottom-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+          <Edit className="w-4 h-4 text-gray-400" />
         </div>
       </div>
     </div>
