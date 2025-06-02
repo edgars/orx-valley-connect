@@ -4,8 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useIsAdmin } from '@/hooks/useUsers';
 import Header from '@/components/Header';
@@ -15,12 +15,10 @@ import AttendanceList from '@/components/AttendanceList';
 import { Navigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { Calendar, MapPin, Users, Plus, Edit, UserCheck, Clock, User, Trash2, AlertTriangle } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Calendar, MapPin, Users, Plus, Edit, UserCheck, Clock, User } from 'lucide-react';
 
 const EventManagement = () => {
   const isAdmin = useIsAdmin();
-  const { toast } = useToast();
   const queryClient = useQueryClient();
   
   // Hook para buscar TODOS os eventos (não apenas ativos)
@@ -41,66 +39,8 @@ const EventManagement = () => {
   const [selectedEvent, setSelectedEvent] = useState<any>(null);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showAttendanceDialog, setShowAttendanceDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [searchTerm, setSearchTerm] = useState('');
-
-  // Mutation para excluir evento
-  const deleteEventMutation = useMutation({
-    mutationFn: async (eventId: string) => {
-      // Primeiro, verificar se há inscrições
-      const { data: registrations, error: checkError } = await supabase
-        .from('event_registrations')
-        .select('id')
-        .eq('event_id', eventId);
-
-      if (checkError) throw checkError;
-
-      if (registrations && registrations.length > 0) {
-        // Se há inscrições, deletar primeiro
-        const { error: deleteRegistrationsError } = await supabase
-          .from('event_registrations')
-          .delete()
-          .eq('event_id', eventId);
-
-        if (deleteRegistrationsError) throw deleteRegistrationsError;
-      }
-
-      // Deletar o evento
-      const { error: deleteEventError } = await supabase
-        .from('events')
-        .delete()
-        .eq('id', eventId);
-
-      if (deleteEventError) throw deleteEventError;
-    },
-    onSuccess: () => {
-      // Invalidar queries para atualizar a lista
-      queryClient.invalidateQueries({ queryKey: ['all-events'] });
-      queryClient.invalidateQueries({ queryKey: ['events'] });
-      
-      toast({
-        title: "Evento excluído!",
-        description: "O evento foi excluído com sucesso.",
-      });
-      
-      setShowDeleteDialog(false);
-      setSelectedEvent(null);
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Erro ao excluir evento",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-  });
-
-  const handleDeleteEvent = () => {
-    if (selectedEvent) {
-      deleteEventMutation.mutate(selectedEvent.id);
-    }
-  };
 
   if (!isAdmin) {
     return <Navigate to="/" replace />;
@@ -176,8 +116,8 @@ const EventManagement = () => {
           </Badge>
         </div>
 
-        {/* Botões de ação sobrepostos */}
-        <div className="absolute top-3 left-3 flex gap-2">
+        {/* Botão de presença sobreposto */}
+        <div className="absolute top-3 left-3">
           <Button
             size="sm"
             variant="secondary"
@@ -189,19 +129,6 @@ const EventManagement = () => {
             }}
           >
             <UserCheck className="w-3 h-3" />
-          </Button>
-
-          <Button
-            size="sm"
-            variant="secondary"
-            className="h-8 w-8 p-0 bg-red-600/70 hover:bg-red-700/90 text-white"
-            onClick={(e) => {
-              e.stopPropagation(); // Previne o clique no card
-              setSelectedEvent(event);
-              setShowDeleteDialog(true);
-            }}
-          >
-            <Trash2 className="w-3 h-3" />
           </Button>
         </div>
       </div>
@@ -413,43 +340,6 @@ const EventManagement = () => {
           </Card>
         )}
       </div>
-
-      {/* Modal de Confirmação de Exclusão */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="bg-[#1a1a1a] border-gray-700 text-white">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2 text-red-400">
-              <AlertTriangle className="w-5 h-5" />
-              Confirmar Exclusão
-            </DialogTitle>
-            <DialogDescription className="text-gray-300">
-              Você tem certeza que deseja excluir o evento "{selectedEvent?.title}"?
-              <br />
-              <br />
-              <span className="text-red-400 font-semibold">
-                Esta ação não pode ser desfeita. Todas as inscrições serão permanentemente removidas.
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={deleteEventMutation.isPending}
-              className="border-gray-600 text-gray-300 hover:bg-gray-800"
-            >
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleDeleteEvent}
-              disabled={deleteEventMutation.isPending}
-              className="bg-red-600 hover:bg-red-700 text-white"
-            >
-              {deleteEventMutation.isPending ? 'Excluindo...' : 'Excluir Evento'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
 
       <CreateEventDialog 
         open={showCreateDialog} 
