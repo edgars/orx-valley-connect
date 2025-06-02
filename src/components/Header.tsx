@@ -197,6 +197,7 @@ const Header = () => {
             </NavLink>
             <NavLink to="/comunidade">Comunidade</NavLink>
             <NavLink to="/blog">Blog</NavLink>
+            <NavLink to="/manifesto">Manifesto</NavLink>
 
             {!user && <NavLink to="/sobre">Sobre</NavLink>}
 
@@ -353,6 +354,9 @@ const Header = () => {
               </NavLink>
               <NavLink to="/blog" onClick={() => setIsMenuOpen(false)}>
                 Blog
+              </NavLink>
+              <NavLink to="/manifesto" onClick={() => setIsMenuOpen(false)}>
+                Manifesto
               </NavLink>
               
               {!user && <NavLink to="/sobre" onClick={() => setIsMenuOpen(false)}>Sobre</NavLink>}

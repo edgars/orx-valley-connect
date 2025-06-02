@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -23,6 +22,7 @@ import NotFound from "./pages/NotFound";
 import CertificateGeneratorPage from "./pages/certificados";
 import ResetPassword from "./components/ResetPassword";
 import Sobre from "./pages/Sobre";
+import Manifesto from "./pages/Manifesto";
 
 const queryClient = new QueryClient();
 
@@ -44,12 +44,13 @@ const App = () => (
             <Route path="/meus-eventos" element={<MyEvents />} />
             <Route path="/blog" element={<Blog />} />
             <Route path="/sobre" element={<Sobre />} />
+            <Route path="/manifesto" element={<Manifesto />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
             <Route path="/blog/gerenciar" element={<BlogManagement />} />
             <Route path="/blog/criar" element={<CreateBlogPost />} />
             <Route path="/blog/editar/:id" element={<EditBlogPost />} />
-           <Route path="/certificados" element={<CertificateGeneratorPage />} />
-           <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/certificados" element={<CertificateGeneratorPage />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
