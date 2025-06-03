@@ -84,13 +84,13 @@ export const useCreateSponsor = () => {
       queryClient.invalidateQueries({ queryKey: ['sponsors'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       toast({
-        title: "Apoiador adicionado com sucesso!",
-        description: "O logo foi validado e o apoiador foi cadastrado.",
+        title: "Parceiro adicionado com sucesso!",
+        description: "O logo foi validado e o parceiro foi cadastrado.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Erro ao adicionar apoiador",
+        title: "Erro ao adicionar parceiros",
         description: error.message,
         variant: "destructive",
       });
@@ -128,13 +128,13 @@ export const useUpdateSponsor = () => {
       queryClient.invalidateQueries({ queryKey: ['sponsors'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       toast({
-        title: "Apoiador atualizado com sucesso!",
-        description: "As informações do apoiador foram atualizadas.",
+        title: "Parceiro atualizado com sucesso!",
+        description: "As informações do parceiro foram atualizadas.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Erro ao atualizar apoiador",
+        title: "Erro ao atualizar parceiros",
         description: error.message,
         variant: "destructive",
       });
@@ -166,13 +166,13 @@ export const useDeleteSponsor = () => {
       queryClient.invalidateQueries({ queryKey: ['sponsors'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       toast({
-        title: "Apoiador removido com sucesso!",
-        description: "O apoiador foi desativado e não aparecerá mais na lista.",
+        title: "Parceiros removido com sucesso!",
+        description: "O parceiros foi desativado e não aparecerá mais na lista.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Erro ao remover apoiador",
+        title: "Erro ao remover parceiros",
         description: error.message,
         variant: "destructive",
       });
@@ -180,7 +180,7 @@ export const useDeleteSponsor = () => {
   });
 };
 
-// Hook para buscar todos os apoiadores (incluindo inativos) - útil para administração
+// Hook para buscar todos os Parceiros (incluindo inativos) - útil para administração
 export const useAllSponsors = () => {
   return useQuery({
     queryKey: ['all-sponsors'],
@@ -197,7 +197,7 @@ export const useAllSponsors = () => {
   });
 };
 
-// Hook para reativar um apoiador
+// Hook para reativar um parceiros
 export const useReactivateSponsor = () => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -222,13 +222,13 @@ export const useReactivateSponsor = () => {
       queryClient.invalidateQueries({ queryKey: ['all-sponsors'] });
       queryClient.invalidateQueries({ queryKey: ['stats'] });
       toast({
-        title: "Apoiador reativado com sucesso!",
-        description: "O apoiador voltou a aparecer na lista ativa.",
+        title: "parceiro reativado com sucesso!",
+        description: "O parceiro voltou a aparecer na lista ativa.",
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Erro ao reativar apoiador",
+        title: "Erro ao reativar parceiro",
         description: error.message,
         variant: "destructive",
       });

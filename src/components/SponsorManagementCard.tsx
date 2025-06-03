@@ -62,14 +62,14 @@ const SponsorManagementCard = () => {
         setEditingSponsor(null);
         toast({
           title: "Sucesso",
-          description: "Apoiador atualizado com sucesso",
+          description: "Parceiro atualizado com sucesso",
         });
       } else {
         await createSponsorMutation.mutateAsync(formData);
         setIsCreating(false);
         toast({
           title: "Sucesso",
-          description: "Apoiador criado com sucesso",
+          description: "Parceiro criado com sucesso",
         });
       }
       resetForm();
@@ -77,7 +77,7 @@ const SponsorManagementCard = () => {
       console.error('Error saving sponsor:', error);
       toast({
         title: "Erro",
-        description: "Erro ao salvar apoiador",
+        description: "Erro ao salvar Parceiro",
         variant: "destructive",
       });
     }
@@ -104,13 +104,13 @@ const SponsorManagementCard = () => {
       setDeletingSponsor(null);
       toast({
         title: "Sucesso",
-        description: "Apoiador excluído com sucesso",
+        description: "Parceiro excluído com sucesso",
       });
     } catch (error) {
       console.error('Error deleting sponsor:', error);
       toast({
         title: "Erro",
-        description: "Erro ao excluir apoiador",
+        description: "Erro ao excluir Parceiro",
         variant: "destructive",
       });
     }
@@ -142,7 +142,7 @@ const SponsorManagementCard = () => {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Gestão de Apoiadores</CardTitle>
+          <CardTitle>Gestão de Parceiros</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-center p-8">
@@ -157,7 +157,7 @@ const SponsorManagementCard = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Gestão de Apoiadores</CardTitle>
+          <CardTitle>Gestão de Parceiros</CardTitle>
           <Button 
             onClick={() => {
               setIsCreating(!isCreating);
@@ -166,7 +166,7 @@ const SponsorManagementCard = () => {
             }}
           >
             <Plus className="h-4 w-4 mr-2" />
-            Adicionar Apoiador
+            Adicionar Parceiro
           </Button>
         </CardHeader>
         <CardContent>
@@ -174,7 +174,7 @@ const SponsorManagementCard = () => {
             <form onSubmit={handleSubmit} className="space-y-4 mb-6 p-4 border rounded-lg">
               <div className="flex justify-between items-center">
                 <h3 className="text-lg font-semibold">
-                  {editingSponsor ? 'Editar Apoiador' : 'Novo Apoiador'}
+                  {editingSponsor ? 'Editar Parceiro' : 'Novo Parceiro'}
                 </h3>
               </div>
               
@@ -190,7 +190,7 @@ const SponsorManagementCard = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="tier">Categoria hhhh</Label>
+                  <Label htmlFor="tier">Categoria</Label>
                   <Select value={formData.tier} onValueChange={(value: any) => setFormData({ ...formData, tier: value })}>
                     <SelectTrigger>
                       <SelectValue />
@@ -338,7 +338,7 @@ const SponsorManagementCard = () => {
                 {(!sponsors || sponsors.length === 0) && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center py-8">
-                      Nenhum apoiador cadastrado
+                      Nenhum Parceiro cadastrado
                     </TableCell>
                   </TableRow>
                 )}
@@ -354,7 +354,7 @@ const SponsorManagementCard = () => {
           <DialogHeader>
             <DialogTitle>Confirmar Exclusão</DialogTitle>
             <DialogDescription>
-              Tem certeza que deseja excluir o apoiador "{deletingSponsor?.name}"? 
+              Tem certeza que deseja excluir o Parceiro "{deletingSponsor?.name}"? 
               Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>

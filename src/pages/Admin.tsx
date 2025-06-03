@@ -26,7 +26,7 @@ const Admin = () => {
         <Tabs defaultValue="users" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="users">Gestão de Usuários</TabsTrigger>
-            <TabsTrigger value="sponsors">Gestão de Apoiadores</TabsTrigger>
+            <TabsTrigger value="sponsors">Gestão de Parceiros</TabsTrigger>
             <TabsTrigger value="content">Gestão de Conteúdo</TabsTrigger>
           </TabsList>
           
