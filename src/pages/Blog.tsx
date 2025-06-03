@@ -197,7 +197,7 @@ const Blog = () => {
                   {featuredPost.featured_image_url && (
                     <div className="lg:w-1/2">
                       <img
-                        src={featuredPost.featured_image_url}
+                        src={featuredPost.featured_image_url || '/orxvalley.white.svg'}
                         alt={featuredPost.title}
                         className="w-full h-64 lg:h-full object-cover hover:scale-105 transition-transform duration-500"
                       />
