@@ -15,7 +15,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useBlogPost, useUpdateBlogPost } from '@/hooks/useBlogPosts';
 import { useAuth } from '@/contexts/AuthContext';
-import { Save } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { Save, Upload, Link, X, Image } from 'lucide-react';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Título é obrigatório'),
@@ -31,10 +33,18 @@ const EditBlogPost = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user, profile } = useAuth();
+  const { toast } = useToast();
   const { data: post, isLoading } = useBlogPost(id!);
   const { mutate: updatePost, isPending } = useUpdateBlogPost();
   const [content, setContent] = useState('');
   const [selectedTags, setSelectedTags] = useState<Array<{ id: string; name: string; color: string }>>([]);
+
+  // Estados para upload de imagem
+  const [imageUploadMethod, setImageUploadMethod] = useState<"url" | "upload">("url");
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -46,6 +56,89 @@ const EditBlogPost = () => {
       status: 'draft',
     }
   });
+
+  // Função para fazer upload da imagem
+  const uploadImageToSupabase = async (file: File): Promise<string> => {
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    try {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      
+      if (!currentUser) {
+        throw new Error('Usuário não está autenticado');
+      }
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `blog-${Date.now()}.${fileExt}`;
+      const filePath = `blog/${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('orx')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        throw error;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from('orx')
+        .getPublicUrl(filePath);
+
+      setUploadProgress(100);
+      return publicUrlData.publicUrl;
+
+    } catch (error: any) {
+      throw new Error(`Falha no upload da imagem: ${error.message}`);
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Função para lidar com seleção de arquivo
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione apenas arquivos de imagem",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Erro",
+          description: "A imagem deve ter no máximo 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedFile(file);
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Função para remover arquivo selecionado
+  const handleRemoveFile = () => {
+    setSelectedFile(null);
+    setImagePreview(null);
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
 
   useEffect(() => {
     if (post) {
@@ -108,10 +201,27 @@ const EditBlogPost = () => {
     );
   }
 
-  const onSubmit = (data: FormData) => {
+  const onSubmit = async (data: FormData) => {
+    let finalImageUrl = data.featured_image_url;
+
+    // Se estiver usando upload e há um arquivo selecionado
+    if (imageUploadMethod === "upload" && selectedFile) {
+      try {
+        finalImageUrl = await uploadImageToSupabase(selectedFile);
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao fazer upload da imagem. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
     updatePost({
       id: id!,
       ...data,
+      featured_image_url: finalImageUrl,
       content,
       tags: selectedTags
     }, {
@@ -199,23 +309,148 @@ const EditBlogPost = () => {
                     )}
                   />
 
-                  <FormField
-                    control={form.control}
-                    name="featured_image_url"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel className="text-gray-300">URL da Imagem de Capa</FormLabel>
-                        <FormControl>
-                          <Input 
-                            placeholder="https://exemplo.com/imagem.jpg" 
-                            {...field} 
-                            className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
+                  {/* Seção de Imagem de Capa */}
+                  <div className="space-y-4">
+                    <FormLabel className="text-gray-300">Imagem de Capa</FormLabel>
+                    
+                    {/* Seletor de método */}
+                    <div className="flex gap-2">
+                      <Button
+                        type="button"
+                        variant={imageUploadMethod === "url" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setImageUploadMethod("url");
+                          setSelectedFile(null);
+                          setImagePreview(null);
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Link className="w-4 h-4" />
+                        URL
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={imageUploadMethod === "upload" ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => {
+                          setImageUploadMethod("upload");
+                          form.setValue('featured_image_url', '');
+                        }}
+                        className="flex items-center gap-2"
+                      >
+                        <Upload className="w-4 h-4" />
+                        Upload
+                      </Button>
+                    </div>
+
+                    {/* Campo URL */}
+                    {imageUploadMethod === "url" && (
+                      <FormField
+                        control={form.control}
+                        name="featured_image_url"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormControl>
+                              <div className="relative">
+                                <Image className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                                <Input 
+                                  placeholder="https://exemplo.com/imagem.jpg" 
+                                  {...field} 
+                                  className="bg-gray-900 border-gray-700 text-white placeholder:text-gray-400 pl-10"
+                                />
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                     )}
-                  />
+
+                    {/* Campo Upload */}
+                    {imageUploadMethod === "upload" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileSelect}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('image-upload')?.click()}
+                            disabled={isUploading}
+                            className="flex items-center gap-2 border-gray-600 text-gray-300 hover:bg-gray-700"
+                          >
+                            <Upload className="w-4 h-4" />
+                            {selectedFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                          </Button>
+                          
+                          {selectedFile && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleRemoveFile}
+                              className="text-red-400 hover:text-red-300 border-red-600 hover:bg-red-900/20"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+
+                        {/* Preview da imagem */}
+                        {imagePreview && (
+                          <div className="relative">
+                            <img
+                              src={imagePreview}
+                              alt="Preview"
+                              className="w-full h-48 object-cover rounded-md border border-gray-600"
+                            />
+                            <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-sm px-2 py-1 rounded">
+                              {selectedFile?.name}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Exibir imagem atual se existir */}
+                        {!selectedFile && !imagePreview && form.getValues('featured_image_url') && (
+                          <div className="relative">
+                            <img
+                              src={form.getValues('featured_image_url')}
+                              alt="Imagem atual"
+                              className="w-full h-48 object-cover rounded-md border border-gray-600"
+                            />
+                            <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 text-white text-sm px-2 py-1 rounded">
+                              Imagem atual do post
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Progress do upload */}
+                        {isUploading && (
+                          <div className="space-y-2">
+                            <div className="w-full bg-gray-700 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${uploadProgress}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-sm text-gray-400">
+                              Fazendo upload... {uploadProgress}%
+                            </p>
+                          </div>
+                        )}
+
+                        <p className="text-xs text-gray-400">
+                          Máximo 5MB. Formatos: JPG, PNG, GIF, WebP
+                        </p>
+                      </div>
+                    )}
+                  </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <FormField
@@ -270,11 +505,15 @@ const EditBlogPost = () => {
               <div className="flex justify-end gap-2">
                 <Button 
                   type="submit" 
-                  disabled={isPending}
+                  disabled={isPending || isUploading}
                   className="bg-blue-600 hover:bg-blue-700"
                 >
                   <Save className="w-4 h-4 mr-2" />
-                  Salvar Alterações
+                  {isPending
+                    ? 'Salvando...'
+                    : isUploading
+                    ? 'Fazendo upload...'
+                    : 'Salvar Alterações'}
                 </Button>
               </div>
             </form>

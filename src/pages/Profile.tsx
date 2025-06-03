@@ -11,7 +11,7 @@ import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
-import { User, Mail, Phone, Building, MapPin, Github, Linkedin, Globe, Shield, Key, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Phone, Building, MapPin, Github, Linkedin, Globe, Shield, Key, Eye, EyeOff, Upload, Link, X, Image } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -34,6 +34,13 @@ const Profile = () => {
     avatar_url: ''
   });
 
+  // Estados para upload de avatar
+  const [avatarUploadMethod, setAvatarUploadMethod] = useState<"url" | "upload">("url");
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState<File | null>(null);
+  const [avatarUploadProgress, setAvatarUploadProgress] = useState(0);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+
   // Estados para a seção de senha
   const [passwordData, setPasswordData] = useState({
     currentPassword: '',
@@ -51,6 +58,104 @@ const Profile = () => {
   const isOAuthUser = user?.app_metadata?.providers?.includes('google') || 
                      user?.app_metadata?.providers?.includes('github');
   const hasEmailProvider = user?.app_metadata?.providers?.includes('email');
+
+  // Função para fazer upload do avatar
+  const uploadAvatarToSupabase = async (file: File): Promise<string> => {
+    setIsUploadingAvatar(true);
+    setAvatarUploadProgress(0);
+
+    try {
+      // Verificar se usuário está autenticado
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      console.log('Usuário autenticado:', currentUser?.email);
+      
+      if (!currentUser) {
+        throw new Error('Usuário não está autenticado');
+      }
+
+      // Gerar nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `avatar-${currentUser.id}-${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      console.log('Tentando upload para:', filePath);
+
+      // Upload do arquivo para o bucket 'orx'
+      const { data, error } = await supabase.storage
+        .from('orx')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (error) {
+        console.error('Erro detalhado do upload:', error);
+        throw error;
+      }
+
+      console.log('Upload realizado com sucesso:', data);
+
+      // Obter URL pública
+      const { data: publicUrlData } = supabase.storage
+        .from('orx')
+        .getPublicUrl(filePath);
+
+      setAvatarUploadProgress(100);
+      return publicUrlData.publicUrl;
+
+    } catch (error: any) {
+      console.error('Erro no upload:', error);
+      throw new Error(`Falha no upload do avatar: ${error.message}`);
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
+  // Função para lidar com seleção de arquivo de avatar
+  const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validar tipo de arquivo
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Erro",
+          description: "Por favor, selecione apenas arquivos de imagem",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Validar tamanho (máximo 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        toast({
+          title: "Erro",
+          description: "A imagem deve ter no máximo 5MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      setSelectedAvatarFile(file);
+
+      // Criar preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setAvatarPreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Função para remover arquivo de avatar selecionado
+  const handleRemoveAvatarFile = () => {
+    setSelectedAvatarFile(null);
+    setAvatarPreview(null);
+    // Limpar input
+    const fileInput = document.getElementById('avatar-upload') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
 
   React.useEffect(() => {
     if (profile) {
@@ -75,9 +180,31 @@ const Profile = () => {
     return null;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    updateProfileMutation.mutate(formData);
+
+    let finalAvatarUrl = formData.avatar_url;
+
+    // Se estiver usando upload e há um arquivo selecionado
+    if (avatarUploadMethod === "upload" && selectedAvatarFile) {
+      try {
+        finalAvatarUrl = await uploadAvatarToSupabase(selectedAvatarFile);
+      } catch (error) {
+        toast({
+          title: "Erro",
+          description: "Erro ao fazer upload do avatar. Tente novamente.",
+          variant: "destructive",
+        });
+        return;
+      }
+    }
+
+    const updatedFormData = {
+      ...formData,
+      avatar_url: finalAvatarUrl
+    };
+
+    updateProfileMutation.mutate(updatedFormData);
   };
 
   const handlePasswordUpdate = async (e: React.FormEvent) => {
@@ -199,7 +326,7 @@ const Profile = () => {
           
           <div className="space-y-6">
             {/* Formulário de perfil */}
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div onSubmit={handleSubmit} className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -207,24 +334,130 @@ const Profile = () => {
                     Informações Pessoais
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center space-x-4 mb-6">
-                    <Avatar className="w-20 h-20">
-                      <AvatarImage src={formData.avatar_url} />
-                      <AvatarFallback className="bg-orx-gradient text-white text-lg">
-                        {getUserInitials()}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <Label htmlFor="avatar_url">URL do Avatar</Label>
-                      <Input
-                        id="avatar_url"
-                        type="url"
-                        value={formData.avatar_url}
-                        onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
-                        placeholder="https://exemplo.com/avatar.jpg"
-                      />
+                <CardContent className="space-y-6">
+                  {/* Seção de Avatar */}
+                  <div className="space-y-4">
+                    <div className="flex items-center space-x-6">
+                      <Avatar className="w-20 h-20">
+                        <AvatarImage src={avatarPreview || formData.avatar_url} />
+                        <AvatarFallback className="bg-orx-gradient text-white text-lg">
+                          {getUserInitials()}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex-1 space-y-3">
+                        <Label>Foto do Perfil</Label>
+                        
+                        {/* Seletor de método */}
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant={avatarUploadMethod === "url" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              setAvatarUploadMethod("url");
+                              setSelectedAvatarFile(null);
+                              setAvatarPreview(null);
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <Link className="w-4 h-4" />
+                            URL
+                          </Button>
+                          <Button
+                            type="button"
+                            variant={avatarUploadMethod === "upload" ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => {
+                              setAvatarUploadMethod("upload");
+                              setFormData(prev => ({ ...prev, avatar_url: "" }));
+                            }}
+                            className="flex items-center gap-2"
+                          >
+                            <Upload className="w-4 h-4" />
+                            Upload
+                          </Button>
+                        </div>
+                      </div>
                     </div>
+
+                    {/* Campo URL */}
+                    {avatarUploadMethod === "url" && (
+                      <div className="relative">
+                        <Image className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          id="avatar_url"
+                          type="url"
+                          value={formData.avatar_url}
+                          onChange={(e) => setFormData({ ...formData, avatar_url: e.target.value })}
+                          placeholder="https://exemplo.com/avatar.jpg"
+                          className="pl-10"
+                        />
+                      </div>
+                    )}
+
+                    {/* Campo Upload */}
+                    {avatarUploadMethod === "upload" && (
+                      <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                          <Input
+                            id="avatar-upload"
+                            type="file"
+                            accept="image/*"
+                            onChange={handleAvatarFileSelect}
+                            className="hidden"
+                          />
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => document.getElementById('avatar-upload')?.click()}
+                            disabled={isUploadingAvatar}
+                            className="flex items-center gap-2"
+                          >
+                            <Upload className="w-4 h-4" />
+                            {selectedAvatarFile ? 'Trocar Imagem' : 'Selecionar Imagem'}
+                          </Button>
+                          
+                          {selectedAvatarFile && (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleRemoveAvatarFile}
+                              className="text-red-600 hover:text-red-700"
+                            >
+                              <X className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+
+                        {selectedAvatarFile && (
+                          <div className="text-sm text-muted-foreground">
+                            📁 {selectedAvatarFile.name}
+                          </div>
+                        )}
+
+                        {/* Progress do upload */}
+                        {isUploadingAvatar && (
+                          <div className="space-y-2">
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                style={{ width: `${avatarUploadProgress}%` }}
+                              ></div>
+                            </div>
+                            <p className="text-sm text-muted-foreground">
+                              Fazendo upload... {avatarUploadProgress}%
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Informações sobre upload */}
+                        <p className="text-xs text-muted-foreground">
+                          Máximo 5MB. Formatos: JPG, PNG, GIF, WebP
+                        </p>
+                      </div>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -394,14 +627,18 @@ const Profile = () => {
                   Cancelar
                 </Button>
                 <Button 
-                  type="submit" 
+                  onClick={handleSubmit}
                   className="bg-orx-gradient hover:opacity-90"
-                  disabled={updateProfileMutation.isPending}
+                  disabled={updateProfileMutation.isPending || isUploadingAvatar}
                 >
-                  {updateProfileMutation.isPending ? 'Salvando...' : 'Salvar Perfil'}
+                  {updateProfileMutation.isPending
+                    ? 'Salvando...'
+                    : isUploadingAvatar
+                    ? 'Fazendo upload...'
+                    : 'Salvar Perfil'}
                 </Button>
               </div>
-            </form>
+            </div>
 
             {/* Seção de Segurança da Conta */}
             <Card>
@@ -452,7 +689,7 @@ const Profile = () => {
                 )}
 
                 {/* Formulário de senha */}
-                <form onSubmit={handlePasswordUpdate} className="space-y-4">
+                <div onSubmit={handlePasswordUpdate} className="space-y-4">
                   {/* Senha atual - só para usuários que já têm senha */}
                   {hasEmailProvider && !isOAuthUser && (
                     <div className="space-y-2">
@@ -549,7 +786,7 @@ const Profile = () => {
 
                   <div className="flex flex-col sm:flex-row gap-3 sm:justify-center pt-4">
                     <Button 
-                      type="submit"
+                      onClick={handlePasswordUpdate}
                       size="lg" 
                       className="bg-orx-gradient hover:opacity-90 text-white text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg w-full sm:w-auto sm:max-w-sm transition-all duration-300 hover:shadow-xl order-1"
                       disabled={isUpdatingPassword}
@@ -580,7 +817,7 @@ const Profile = () => {
                       </span>
                     </Button>
                   </div>
-                </form>
+                </div>
               </CardContent>
             </Card>
           </div>
