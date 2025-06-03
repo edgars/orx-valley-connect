@@ -1,16 +1,18 @@
-
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Loader2, Search } from 'lucide-react';
-import { useUsers, useUpdateUserRole, useUpdateUserStatus } from '@/hooks/useUsers';
+import { useUsers, useUpdateUserRole, useUpdateUserStatus, useDeleteUser } from '@/hooks/useUsers';
+import { useToast } from '@/hooks/use-toast';
 import UserManagementCard from '@/components/UserManagementCard';
 
 const UserManagementList = () => {
   const { data: users, isLoading } = useUsers();
   const updateUserRole = useUpdateUserRole();
   const updateUserStatus = useUpdateUserStatus();
+  const deleteUser = useDeleteUser();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredUsers = users?.filter(user => 
@@ -25,6 +27,27 @@ const UserManagementList = () => {
 
   const handleStatusChange = (userId: string, status: 'active' | 'blocked') => {
     updateUserStatus.mutate({ userId, status });
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    const userToDelete = users?.find(user => user.id === userId);
+    
+    deleteUser.mutate(userId, {
+      onSuccess: () => {
+        toast({
+          title: "Usuário excluído",
+          description: `${userToDelete?.full_name || 'Usuário'} foi removido permanentemente do sistema.`,
+          variant: "default",
+        });
+      },
+      onError: (error: any) => {
+        toast({
+          title: "Erro ao excluir usuário",
+          description: error.message || "Ocorreu um erro inesperado. Tente novamente.",
+          variant: "destructive",
+        });
+      }
+    });
   };
 
   if (isLoading) {
@@ -66,7 +89,8 @@ const UserManagementList = () => {
                 user={user}
                 onRoleChange={handleRoleChange}
                 onStatusChange={handleStatusChange}
-                isUpdating={updateUserRole.isPending || updateUserStatus.isPending}
+                onDeleteUser={handleDeleteUser}
+                isUpdating={updateUserRole.isPending || updateUserStatus.isPending || deleteUser.isPending}
               />
             ))}
             {(!filteredUsers || filteredUsers.length === 0) && (

@@ -288,7 +288,7 @@ const AboutSection = () => {
                     <Button 
                       size="lg" 
                       className="bg-orx-gradient hover:opacity-90 text-white text-base sm:text-lg px-6 sm:px-8 py-3 sm:py-4 rounded-xl shadow-lg w-full sm:w-auto max-w-sm transition-all duration-300 hover:shadow-xl"
-                      onClick={() => navigate('/auth')}
+                      onClick={() => window.open('https://discord.gg/adjkuGjRyG', '_blank')}
                     >
                       <span className="flex items-center justify-center">
                         Participar da Comunidade

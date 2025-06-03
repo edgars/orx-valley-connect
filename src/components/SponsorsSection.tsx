@@ -40,7 +40,7 @@ const SponsorsSection = () => {
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-4">Nossos Parceiros</h2>
           <p className="text-xl text-gray-300">
-            Agradecemos o apoio das empresas que tornam nossa comunidade possível
+            instituições e empresas que acreditam na nossa missão e contribuem ativamente para o fortalecimento da nossa comunidade.
           </p>
         </div>
 

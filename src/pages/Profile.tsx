@@ -11,7 +11,7 @@ import { useProfile, useUpdateProfile } from '@/hooks/useProfile';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import Header from '@/components/Header';
-import { User, Mail, Phone, Building, MapPin, Github, Linkedin, Globe, Shield, Key, Eye, EyeOff, Upload, Link, X, Image } from 'lucide-react';
+import { User, Mail, Phone, Building, MapPin, Github, Linkedin, Globe, Shield, Key, Eye, EyeOff, Upload, Link, X, Image, AlertTriangle } from 'lucide-react';
 
 const Profile = () => {
   const { user } = useAuth();
@@ -228,23 +228,30 @@ const Profile = () => {
       return;
     }
 
+    // SEMPRE exigir senha atual para alteração
+    if (!passwordData.currentPassword) {
+      toast({
+        title: "Erro",
+        description: "Por motivos de segurança, é necessário informar sua senha atual.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUpdatingPassword(true);
 
     try {
-      // Se o usuário já tem senha (não é só OAuth), precisa verificar a atual primeiro
-      if (hasEmailProvider && passwordData.currentPassword) {
-        // Verifica a senha atual
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email: user?.email || '',
-          password: passwordData.currentPassword,
-        });
+      // Sempre verifica a senha atual primeiro
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: user?.email || '',
+        password: passwordData.currentPassword,
+      });
 
-        if (signInError) {
-          throw new Error('Senha atual incorreta');
-        }
+      if (signInError) {
+        throw new Error('Senha atual incorreta. Verifique e tente novamente.');
       }
 
-      // Atualiza a senha
+      // Se chegou até aqui, a senha atual está correta, pode atualizar
       const { error } = await supabase.auth.updateUser({
         password: passwordData.newPassword
       });
@@ -252,10 +259,8 @@ const Profile = () => {
       if (error) throw error;
 
       toast({
-        title: isOAuthUser && !hasEmailProvider ? "Senha definida!" : "Senha atualizada!",
-        description: isOAuthUser && !hasEmailProvider 
-          ? "Agora você pode fazer login com email e senha também." 
-          : "Sua senha foi atualizada com sucesso.",
+        title: "Senha atualizada com sucesso!",
+        description: "Sua senha foi alterada com segurança.",
       });
 
       // Limpa os campos
@@ -288,7 +293,7 @@ const Profile = () => {
 
       toast({
         title: "Email enviado!",
-        description: "Verifique sua caixa de entrada para definir/redefinir sua senha.",
+        description: "Verifique sua caixa de entrada para redefinir sua senha via email.",
       });
     } catch (error: any) {
       toast({
@@ -671,60 +676,42 @@ const Profile = () => {
                   </div>
                 </div>
 
-                {/* Alerta para usuários OAuth */}
-                {isOAuthUser && !hasEmailProvider && (
-                  <div className="bg-blue-50 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Key className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
-                      <div>
-                        <h4 className="font-medium text-blue-900 dark:text-blue-100">
-                          Defina uma senha
-                        </h4>
-                        <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                          Sua conta foi criada com login social. Defina uma senha para ter mais opções de acesso.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
                 {/* Formulário de senha */}
                 <div onSubmit={handlePasswordUpdate} className="space-y-4">
-                  {/* Senha atual - só para usuários que já têm senha */}
-                  {hasEmailProvider && !isOAuthUser && (
-                    <div className="space-y-2">
-                      <Label htmlFor="currentPassword">Senha Atual</Label>
-                      <div className="relative">
-                        <Input
-                          id="currentPassword"
-                          type={showPasswords.current ? "text" : "password"}
-                          value={passwordData.currentPassword}
-                          onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                          required
-                          placeholder="Digite sua senha atual"
-                          className="pr-12"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
-                        >
-                          {showPasswords.current ? (
-                            <EyeOff className="h-4 w-4" />
-                          ) : (
-                            <Eye className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
+                  {/* Senha atual - SEMPRE obrigatória */}
+                  <div className="space-y-2">
+                    <Label htmlFor="currentPassword">Senha Atual *</Label>
+                    <div className="relative">
+                      <Input
+                        id="currentPassword"
+                        type={showPasswords.current ? "text" : "password"}
+                        value={passwordData.currentPassword}
+                        onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                        required
+                        placeholder="Digite sua senha atual para confirmar"
+                        className="pr-12"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                      >
+                        {showPasswords.current ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
+                      </Button>
                     </div>
-                  )}
+                    <p className="text-xs text-muted-foreground">
+                      Confirme sua identidade com a senha atual
+                    </p>
+                  </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="newPassword">
-                      {isOAuthUser && !hasEmailProvider ? 'Definir Senha' : 'Nova Senha'}
-                    </Label>
+                    <Label htmlFor="newPassword">Nova Senha *</Label>
                     <div className="relative">
                       <Input
                         id="newPassword"
@@ -756,7 +743,7 @@ const Profile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                    <Label htmlFor="confirmPassword">Confirmar Nova Senha *</Label>
                     <div className="relative">
                       <Input
                         id="confirmPassword"
@@ -794,12 +781,12 @@ const Profile = () => {
                       {isUpdatingPassword ? (
                         <div className="flex items-center justify-center">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                          Processando...
+                          Verificando...
                         </div>
                       ) : (
                         <span className="flex items-center justify-center">
                           <Key className="w-4 h-4 mr-2 flex-shrink-0" />
-                          {isOAuthUser && !hasEmailProvider ? 'Definir Senha' : 'Atualizar Senha'}
+                          Alterar Senha
                         </span>
                       )}
                     </Button>
@@ -813,7 +800,7 @@ const Profile = () => {
                       disabled={isUpdatingPassword}
                     >
                       <span className="flex items-center justify-center">
-                        Enviar Link por Email
+                        Esqueci minha senha
                       </span>
                     </Button>
                   </div>
