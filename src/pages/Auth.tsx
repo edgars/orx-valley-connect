@@ -76,17 +76,15 @@ const Auth = () => {
       setIsLoading(false);
     }
   };
-// Substitua esta parte no seu componente Auth.tsx
 
 const handlePasswordReset = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
 
   try {
-    // Detecta se está em desenvolvimento ou produção
     const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
     const baseUrl = isDevelopment ? 'http://localhost:8080' : window.location.origin;
-
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${baseUrl}/reset-password`,
     });
