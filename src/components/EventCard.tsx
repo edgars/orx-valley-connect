@@ -10,6 +10,8 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
+import { useState, useEffect } from 'react';
 
 interface EventCardProps {
   event: Event;
@@ -19,10 +21,21 @@ const EventCard = ({ event }: EventCardProps) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const registerMutation = useRegisterForEvent();
   const { data: isRegistered, isLoading: checkingRegistration } = useCheckEventRegistration(event.id);
+  
+  // Estado local para controlar a inscrição
+  const [localIsRegistered, setLocalIsRegistered] = useState(false);
 
-  const handleRegister = () => {
+  // Sincroniza estado local com dados do servidor
+  useEffect(() => {
+    if (isRegistered !== undefined) {
+      setLocalIsRegistered(isRegistered);
+    }
+  }, [isRegistered]);
+
+  const handleRegister = async () => {
     if (!user) {
       toast({
         title: "Login necessário",
@@ -32,7 +45,7 @@ const EventCard = ({ event }: EventCardProps) => {
       return;
     }
 
-    if (isRegistered) {
+    if (localIsRegistered) {
       toast({
         title: "Já inscrito",
         description: "Você já está cadastrado para este evento.",
@@ -41,7 +54,33 @@ const EventCard = ({ event }: EventCardProps) => {
       return;
     }
 
-    registerMutation.mutate(event.id);
+    try {
+      // Atualiza estado local imediatamente para melhor UX
+      setLocalIsRegistered(true);
+      
+      await registerMutation.mutateAsync(event.id);
+      
+      // Invalida as queries relacionadas para atualizar o cache
+      queryClient.invalidateQueries({ 
+        queryKey: ['event-registration', event.id] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['user-event-registrations'] 
+      });
+      queryClient.invalidateQueries({ 
+        queryKey: ['events'] 
+      });
+      
+      toast({
+        title: "Inscrição realizada!",
+        description: "Você foi inscrito com sucesso no evento.",
+      });
+      
+    } catch (error) {
+      // Reverte estado local em caso de erro
+      setLocalIsRegistered(false);
+      console.error('Erro ao se inscrever:', error);
+    }
   };
 
   const handleViewDetails = () => {
@@ -116,6 +155,9 @@ const EventCard = ({ event }: EventCardProps) => {
   const eventDate = new Date(event.date_time);
   const isPastEvent = eventDate < new Date();
 
+  // Usa estado local se disponível, senão usa dados do servidor
+  const currentRegistrationStatus = localIsRegistered;
+
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-2 bg-card border-border">
       <div className="aspect-video w-full bg-gradient-to-br from-orx-primary/20 to-orx-accent/20 relative overflow-hidden">
@@ -173,7 +215,7 @@ const EventCard = ({ event }: EventCardProps) => {
             </div>
           )}
           
-          {(event.type === 'online' || event.type === 'hibrido') && event.stream_url && isRegistered && (
+          {(event.type === 'online' || event.type === 'hibrido') && event.stream_url && currentRegistrationStatus && (
             <div className="flex items-center gap-2">
               <Globe className="w-4 h-4 text-primary" />
               <a 
@@ -208,7 +250,7 @@ const EventCard = ({ event }: EventCardProps) => {
             </p>
           )}
           
-          {isRegistered && (
+          {currentRegistrationStatus && (
             <p className="text-green-600 font-medium flex items-center gap-2">
               <CheckCircle className="w-4 h-4 flex-shrink-0" />
               Você está inscrito neste evento
@@ -238,7 +280,7 @@ const EventCard = ({ event }: EventCardProps) => {
           </Button>
 
           {/* Botão de inscrição - só aparece se não estiver inscrito e não for evento passado */}
-          {!isPastEvent && !isRegistered && (
+          {!isPastEvent && !currentRegistrationStatus && (
             <Button 
               className="w-full bg-orx-gradient hover:opacity-90 text-white"
               onClick={handleRegister}
