@@ -20,9 +20,9 @@ import CreateBlogPost from "./pages/CreateBlogPost";
 import EditBlogPost from "./pages/EditBlogPost";
 import NotFound from "./pages/NotFound";
 import CertificateGeneratorPage from "./pages/certificados";
-import ResetPassword from "./components/ResetPassword";
 import Sobre from "./pages/Sobre";
 import Manifesto from "./pages/Manifesto";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 

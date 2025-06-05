@@ -77,49 +77,52 @@ const Auth = () => {
     }
   };
 
-  const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
+const handlePasswordReset = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setIsLoading(true);
 
-    try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
+  try {
+    const isDevelopment = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+    const baseUrl = isDevelopment ? 'http://localhost:8080' : window.location.origin;
+    
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${baseUrl}/reset-password`,
+    });
 
-      if (error) throw error;
+    if (error) throw error;
 
+    toast({
+      title: "Email enviado!",
+      description:
+        "Verifique sua caixa de entrada para definir/redefinir sua senha.",
+    });
+
+    // Volta para a tela de login após enviar o email
+    setIsPasswordReset(false);
+    setIsLogin(true);
+  } catch (error: any) {
+    // Se o erro for que o usuário não tem senha (conta OAuth)
+    if (
+      error.message.includes("For security purposes") ||
+      error.message.includes("email not confirmed")
+    ) {
       toast({
-        title: "Email enviado!",
+        title: "Conta criada com provedor social",
         description:
-          "Verifique sua caixa de entrada para definir/redefinir sua senha.",
+          "Sua conta foi criada com Google/GitHub. Entre normalmente ou crie uma nova conta com email/senha.",
+        variant: "destructive",
       });
-
-      // Volta para a tela de login após enviar o email
-      setIsPasswordReset(false);
-      setIsLogin(true);
-    } catch (error: any) {
-      // Se o erro for que o usuário não tem senha (conta OAuth)
-      if (
-        error.message.includes("For security purposes") ||
-        error.message.includes("email not confirmed")
-      ) {
-        toast({
-          title: "Conta criada com provedor social",
-          description:
-            "Sua conta foi criada com Google/GitHub. Entre normalmente ou crie uma nova conta com email/senha.",
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: "Erro",
-          description: error.message,
-          variant: "destructive",
-        });
-      }
-    } finally {
-      setIsLoading(false);
+    } else {
+      toast({
+        title: "Erro",
+        description: error.message,
+        variant: "destructive",
+      });
     }
-  };
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleGoogleAuth = async () => {
     try {
