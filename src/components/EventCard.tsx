@@ -155,7 +155,6 @@ const EventCard = ({ event }: EventCardProps) => {
   const eventDate = new Date(event.date_time);
   const isPastEvent = eventDate < new Date();
 
-  // Usa estado local se disponível, senão usa dados do servidor
   const currentRegistrationStatus = localIsRegistered;
 
   return (
@@ -279,7 +278,6 @@ const EventCard = ({ event }: EventCardProps) => {
             Adicionar ao Calendário
           </Button>
 
-          {/* Botão de inscrição - só aparece se não estiver inscrito e não for evento passado */}
           {!isPastEvent && !currentRegistrationStatus && (
             <Button 
               className="w-full bg-orx-gradient hover:opacity-90 text-white"
