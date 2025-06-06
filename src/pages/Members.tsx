@@ -53,8 +53,8 @@ const Members = () => {
             {/* Admins */}
             {members.some((member) => member.role === 'administrador') && (
               <div className="mb-8">
-                <h2 className="text-xl font-semibold mb-2 text-primary">
-                  Administradores da Comunidade
+                <h2 className="text-xl font-semibold mb-2 text-foreground">
+                  Administradores
                 </h2>
                 <div className="border-b border-muted mb-4" />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

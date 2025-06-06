@@ -1,4 +1,5 @@
 import { Instagram, Linkedin, MessageCircle } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Footer = () => {
   return (
@@ -26,12 +27,12 @@ const Footer = () => {
           <div>
             <h4 className="font-semibold mb-4">Navegação</h4>
             <ul className="space-y-2 text-sm text-gray-400">
-              <li><a href="/#home" className="hover:text-white transition-colors">Home</a></li>
-              <li><a href="/manifesto" className="hover:text-white transition-colors">Manifesto</a></li>
-              <li><a href="/comunidade" className="hover:text-white transition-colors">Comunidade</a></li>
-              <li><a href="/blog" className="hover:text-white transition-colors">Blog</a></li>
-              <li><a href="/meus-eventos" className="hover:text-white transition-colors">Eventos</a></li>
-              <li><a href="/sobre" className="hover:text-white transition-colors">Sobre</a></li>
+              <li><Link to="/#home" className="hover:text-white transition-colors">Home</Link></li>
+              <li><Link to="/comunidade" className="hover:text-white transition-colors">Comunidade</Link></li>
+              <li><Link to="/blog" className="hover:text-white transition-colors">Blog</Link></li>
+              <li><Link to="/manifesto" className="hover:text-white transition-colors">Manifesto</Link></li>
+              <li><Link to="/meus-eventos" className="hover:text-white transition-colors">Eventos</Link></li>
+              <li><Link to="/sobre" className="hover:text-white transition-colors">Sobre</Link></li>
             </ul>
           </div>
           
@@ -81,12 +82,12 @@ const Footer = () => {
         <div className="border-t border-gray-700 mt-8 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm text-gray-400">
           <p>&copy; 2025 ORX Valley. Todos os direitos reservados.</p>
           <div className="mt-4 sm:mt-0 flex gap-4">
-            <a href="/privacidade" className="hover:text-white transition-colors">
+            <Link to="/privacidade" className="hover:text-white transition-colors">
               Política de Privacidade
-            </a>
-            <a href="/termos" className="hover:text-white transition-colors">
+            </Link>
+            <Link to="/termos" className="hover:text-white transition-colors">
               Termos de Uso
-            </a>
+            </Link>
           </div>
         </div>
       </div>
