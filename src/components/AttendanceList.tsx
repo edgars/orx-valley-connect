@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useEventRegistrations, useUpdateAttendance } from '@/hooks/useEventRegistrations';
 import { Event } from '@/hooks/useEvents';
-import { UserCheck, Users, AlertCircle, Search, QrCode as QrCodeIcon, Copy } from 'lucide-react';
+import { UserCheck, Users, AlertCircle, Search, QrCode as QrCodeIcon, Copy, Gift, Trophy, Shuffle, Sparkles } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import QRCode from 'react-qr-code';
 
@@ -25,6 +25,12 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
   const [updatingIds, setUpdatingIds] = useState<Set<string>>(new Set());
   const [searchTerm, setSearchTerm] = useState('');
   const [showQrCode, setShowQrCode] = useState(false);
+
+  // Estados do sorteio - ADICIONADO
+  const [showRaffle, setShowRaffle] = useState(false);
+  const [isRaffling, setIsRaffling] = useState(false);
+  const [winner, setWinner] = useState<any>(null);
+  const [raffledParticipants, setRaffledParticipants] = useState<Set<string>>(new Set());
 
   const handleAttendanceChange = async (
     registrationId: string,
@@ -75,6 +81,62 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
       });
     }
   };
+
+  // Função para realizar sorteio - ADICIONADO
+  const performRaffle = () => {
+    const eligibleParticipants = registrations?.filter(reg => 
+      !raffledParticipants.has(reg.id)
+    ) || [];
+    
+    if (eligibleParticipants.length === 0) {
+      toast({
+        title: "Nenhum participante elegível",
+        description: "Não há participantes que ainda não foram sorteados.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsRaffling(true);
+    setWinner(null);
+
+    // Simular animação de sorteio
+    let shuffleCount = 0;
+    const maxShuffles = 20;
+    
+    const shuffleInterval = setInterval(() => {
+      const randomIndex = Math.floor(Math.random() * eligibleParticipants.length);
+      setWinner(eligibleParticipants[randomIndex]);
+      shuffleCount++;
+
+      if (shuffleCount >= maxShuffles) {
+        clearInterval(shuffleInterval);
+        
+        // Escolher vencedor final
+        const finalWinner = eligibleParticipants[Math.floor(Math.random() * eligibleParticipants.length)];
+        setWinner(finalWinner);
+        setIsRaffling(false);
+        
+        // Adicionar à lista de já sorteados
+        setRaffledParticipants(prev => new Set(prev).add(finalWinner.id));
+        
+        toast({
+          title: "🎉 Temos um vencedor!",
+          description: `Parabéns ${finalWinner.profiles?.full_name || finalWinner.profiles?.username}!`,
+        });
+      }
+    }, 100);
+  };
+
+  const resetRaffle = () => {
+    setWinner(null);
+    setRaffledParticipants(new Set());
+    toast({
+      title: "Sorteio resetado",
+      description: "Todos os participantes estão elegíveis novamente.",
+    });
+  };
+
   // Filtrar registrations baseado no termo de busca
   const filteredRegistrations = registrations?.filter(registration => {
     if (!searchTerm) return true;
@@ -142,6 +204,7 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
   const attendedCount = registrations.filter((reg) => reg.attended).length;
   const totalCount = registrations.length;
   const filteredCount = filteredRegistrations.length;
+  const eligibleForRaffle = registrations.filter(reg => !raffledParticipants.has(reg.id)).length; // ADICIONADO
 
   return (
     <Card>
@@ -164,10 +227,111 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
               <QrCodeIcon className="w-4 h-4" />
               {showQrCode ? 'Ocultar QR Code' : 'Gerar QR Code'}
             </Button>
+            {/* Botão do Sorteio - ADICIONADO */}
+            <Button 
+              size="sm" 
+              onClick={() => setShowRaffle(!showRaffle)}
+              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700"
+            >
+              <Gift className="w-4 h-4" />
+              {showRaffle ? 'Ocultar Sorteio' : 'Sorteio'}
+            </Button>
           </div>
         </div>
       </CardHeader>
       <CardContent>
+        {/* Seção de Sorteio - ADICIONADO */}
+        {showRaffle && (
+          <Card className="mb-6 border-purple-200 bg-gradient-to-r from-purple-50 to-pink-50">
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2 text-purple-700">
+                <Gift className="w-5 h-5" />
+                Sorteio do Evento
+                <Sparkles className="w-4 h-4" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-muted-foreground">
+                    Participantes elegíveis: <strong>{eligibleForRaffle}</strong>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    (Todos os participantes inscritos, exceto os já sorteados)
+                  </p>
+                </div>
+                <div className="flex gap-2">
+                  <Button 
+                    onClick={performRaffle}
+                    disabled={isRaffling || eligibleForRaffle === 0}
+                    className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  >
+                    {isRaffling ? (
+                      <>
+                        <Shuffle className="w-4 h-4 animate-spin" />
+                        Sorteando...
+                      </>
+                    ) : (
+                      <>
+                        <Trophy className="w-4 h-4" />
+                        Sortear
+                      </>
+                    )}
+                  </Button>
+                  {raffledParticipants.size > 0 && (
+                    <Button 
+                      onClick={resetRaffle}
+                      variant="outline"
+                      size="sm"
+                      className="text-purple-600 border-purple-200"
+                    >
+                      Reset
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Resultado do sorteio */}
+              {winner && (
+                <Card className="border-2 border-yellow-400 bg-gradient-to-r from-yellow-50 to-orange-50">
+                  <CardContent className="p-8 text-center">
+                    <div className="space-y-4">
+                      <div className="text-6xl">🎉</div>
+                      <div className={`text-4xl font-bold ${isRaffling ? 'animate-pulse text-gray-600' : 'animate-bounce text-yellow-800'}`}>
+                        {isRaffling ? 'Sorteando...' : (winner.profiles?.full_name || winner.profiles?.username || 'Participante')}
+                      </div>
+                      {!isRaffling && winner.profiles?.phone && (
+                        <p className="text-lg text-gray-600 font-medium">
+                          Tel: {winner.profiles.phone}
+                        </p>
+                      )}
+                      {!isRaffling && (
+                        <div className="text-6xl animate-bounce">🏆</div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Lista de já sorteados */}
+              {raffledParticipants.size > 0 && (
+                <div className="border-t pt-4">
+                  <h4 className="text-sm font-medium mb-2 text-purple-700">
+                    Já foram sorteados ({raffledParticipants.size}):
+                  </h4>
+                  <div className="flex flex-wrap gap-1">
+                    {registrations?.filter(reg => raffledParticipants.has(reg.id)).map(reg => (
+                      <Badge key={reg.id} variant="secondary" className="text-xs">
+                        {reg.profiles?.full_name || reg.profiles?.username}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {/* QR Code para marcar presença */}
         {showQrCode && (
           <Card className="mb-6">
@@ -252,11 +416,14 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
               const displayName = registration.profiles?.full_name || 
                                  registration.profiles?.username || 
                                  'Nome não disponível';
+              const wasRaffled = raffledParticipants.has(registration.id); // ADICIONADO
               
               return (
                 <div 
                   key={registration.id} 
-                  className="flex items-center justify-between p-3 border rounded-lg"
+                  className={`flex items-center justify-between p-3 border rounded-lg ${
+                    wasRaffled ? 'bg-yellow-50 border-yellow-200' : ''
+                  }`} // MODIFICADO para destacar sorteados
                 >
                   <div className="flex items-center space-x-3">
                     <Checkbox
@@ -268,7 +435,10 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
                       disabled={updatingIds.has(registration.id)}
                     />
                     <div>
-                      <p className="font-medium">{displayName}</p>
+                      <p className="font-medium flex items-center gap-2">
+                        {displayName}
+                        {wasRaffled && <Trophy className="w-4 h-4 text-yellow-600" />} {/* ADICIONADO */}
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         Inscrito em: {new Date(registration.registered_at || '').toLocaleDateString('pt-BR')}
                       </p>
@@ -280,11 +450,18 @@ const AttendanceList = ({ event }: AttendanceListProps) => {
                     </div>
                   </div>
                   
-                  {registration.attended && (
-                    <Badge className="bg-green-500">
-                      Presente
-                    </Badge>
-                  )}
+                  <div className="flex items-center gap-2"> {/* MODIFICADO para comportar múltiplos badges */}
+                    {registration.attended && (
+                      <Badge className="bg-green-500">
+                        Presente
+                      </Badge>
+                    )}
+                    {wasRaffled && ( // ADICIONADO
+                      <Badge className="bg-yellow-500">
+                        Sorteado
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               );
             })
