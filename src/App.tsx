@@ -23,6 +23,7 @@ import CertificateGeneratorPage from "./pages/certificados";
 import Sobre from "./pages/Sobre";
 import Manifesto from "./pages/Manifesto";
 import ResetPassword from "./pages/ResetPassword";
+import Support from "./pages/suport";
 
 const queryClient = new QueryClient();
 
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/blog/editar/:id" element={<EditBlogPost />} />
             <Route path="/certificados" element={<CertificateGeneratorPage />} />
             <Route path="/reset-password" element={<ResetPassword />} />
+            <Route path="/support" element={<Support />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -176,138 +176,233 @@ const CertificateGenerator = () => {
     canvas.width = 1200;
     canvas.height = 800;
 
-    // Background gradient
+    // Função para desenhar o certificado após carregar a assinatura
+    const drawCertificate = (signatureImg?: HTMLImageElement) => {
+
+    // Background gradient - estilo das imagens de referência
     const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
     if (isDarkTheme) {
-      gradient.addColorStop(0, '#1a1a2e');
-      gradient.addColorStop(0.3, '#16213e');
-      gradient.addColorStop(0.7, '#0f3460');
-      gradient.addColorStop(1, '#1a1a2e');
+      gradient.addColorStop(0, '#1a1f3a');
+      gradient.addColorStop(0.5, '#2d3561');
+      gradient.addColorStop(1, '#1a1f3a');
     } else {
-      gradient.addColorStop(0, '#f8f9ff');
-      gradient.addColorStop(0.3, '#ffffff');
-      gradient.addColorStop(0.7, '#ffffff');
-      gradient.addColorStop(1, '#e8e9ff');
+      gradient.addColorStop(0, '#f5f5f5');
+      gradient.addColorStop(0.5, '#ffffff');
+      gradient.addColorStop(1, '#f5f5f5');
     }
 
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Purple geometric shapes
-    ctx.fillStyle = isDarkTheme ? '#4c1d95' : '#6366f1';
-    ctx.globalAlpha = isDarkTheme ? 0.2 : 0.1;
+    // Elementos decorativos geométricos roxos no canto superior direito
+    ctx.save();
+    ctx.fillStyle = isDarkTheme ? '#4a5187' : '#6366f1';
+    ctx.globalAlpha = 0.8;
 
-    // Top right triangle
+    // Formas geométricas no canto superior direito
     ctx.beginPath();
-    ctx.moveTo(canvas.width - 200, 0);
+    ctx.moveTo(canvas.width - 250, 0);
     ctx.lineTo(canvas.width, 0);
-    ctx.lineTo(canvas.width, 200);
+    ctx.lineTo(canvas.width, 180);
+    ctx.closePath();
     ctx.fill();
 
-    // Bottom left shapes
+    // Linhas douradas decorativas no canto superior direito
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 4;
+    
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(canvas.width - 200 + i * 20, 20 + i * 15);
+      ctx.lineTo(canvas.width - 50 + i * 20, 120 + i * 15);
+      ctx.stroke();
+    }
+
+    ctx.restore();
+
+    // Elementos decorativos no canto inferior esquerdo
+    ctx.save();
+    ctx.fillStyle = isDarkTheme ? '#4a5187' : '#6366f1';
+    ctx.globalAlpha = 0.8;
+
     ctx.beginPath();
-    ctx.moveTo(0, canvas.height - 150);
-    ctx.lineTo(150, canvas.height);
+    ctx.moveTo(0, canvas.height - 180);
+    ctx.lineTo(250, canvas.height);
     ctx.lineTo(0, canvas.height);
+    ctx.closePath();
     ctx.fill();
 
-    ctx.globalAlpha = 1;
+    // Linhas douradas no canto inferior esquerdo
+    ctx.globalAlpha = 0.9;
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 4;
+    
+    for (let i = 0; i < 3; i++) {
+      ctx.beginPath();
+      ctx.moveTo(20 + i * 20, canvas.height - 150 + i * 15);
+      ctx.lineTo(170 + i * 20, canvas.height - 20 + i * 15);
+      ctx.stroke();
+    }
 
-    // Golden border
+    ctx.restore();
+
+    // Bordas douradas elegantes - estilo das imagens
     ctx.strokeStyle = '#d4af37';
     ctx.lineWidth = 8;
-    ctx.strokeRect(40, 40, canvas.width - 80, canvas.height - 80);
+    ctx.strokeRect(25, 25, canvas.width - 50, canvas.height - 50);
 
-    // Inner border
+    // Borda interna mais fina
     ctx.strokeStyle = '#f4d03f';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(50, 50, canvas.width - 100, canvas.height - 100);
+    ctx.lineWidth = 3;
+    ctx.strokeRect(35, 35, canvas.width - 70, canvas.height - 70);
 
-    // Medal/Seal
-    const sealX = 150;
-    const sealY = 200;
-    const sealRadius = 60;
+    // Fita/Medalha no estilo das imagens de referência - posicionada mais à esquerda
+    const ribbonX = 150; // Movido para a esquerda
+    const ribbonY = 0;
+    const ribbonWidth = 80;
+    const ribbonHeight = 250; 
 
-    // Outer seal
+    // Fita vertical central
+    const ribbonGradient = ctx.createLinearGradient(ribbonX - ribbonWidth/2, ribbonY, ribbonX + ribbonWidth/2, ribbonY);
+    ribbonGradient.addColorStop(0, '#b8860b');
+    ribbonGradient.addColorStop(0.5, '#d4af37');
+    ribbonGradient.addColorStop(1, '#b8860b');
+
+    ctx.fillStyle = ribbonGradient;
+    ctx.fillRect(ribbonX - ribbonWidth/2, ribbonY, ribbonWidth, ribbonHeight);
+
+    // Medalha circular no estilo das imagens - posicionada mais à esquerda
+    const sealX = ribbonX;
+    const sealY = 240; // Subido um pouco
+    const sealRadius = 80; // Reduzido um pouco
+
+    // Círculo externo da medalha com efeito dentado
+    ctx.save();
+    ctx.translate(sealX, sealY);
+    
+    // Efeito dentado
     ctx.beginPath();
-    ctx.arc(sealX, sealY, sealRadius, 0, Math.PI * 2);
-    ctx.fillStyle = '#d4af37';
+    const spikes = 20;
+    const outerRadius = sealRadius;
+    const innerRadius = sealRadius - 8;
+    
+    for (let i = 0; i < spikes; i++) {
+      const angle = (i * Math.PI * 2) / spikes;
+      const nextAngle = ((i + 1) * Math.PI * 2) / spikes;
+      const midAngle = (angle + nextAngle) / 2;
+      
+      const outerX = Math.cos(angle) * outerRadius;
+      const outerY = Math.sin(angle) * outerRadius;
+      const innerX = Math.cos(midAngle) * innerRadius;
+      const innerY = Math.sin(midAngle) * innerRadius;
+      
+      if (i === 0) ctx.moveTo(outerX, outerY);
+      else ctx.lineTo(outerX, outerY);
+      ctx.lineTo(innerX, innerY);
+    }
+    ctx.closePath();
+
+    // Gradiente dourado para a medalha
+    const medalGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, outerRadius);
+    medalGradient.addColorStop(0, '#f4d03f');
+    medalGradient.addColorStop(0.6, '#d4af37');
+    medalGradient.addColorStop(1, '#b8860b');
+    
+    ctx.fillStyle = medalGradient;
     ctx.fill();
 
-    // Inner seal
+    // Centro da medalha
     ctx.beginPath();
-    ctx.arc(sealX, sealY, sealRadius - 10, 0, Math.PI * 2);
-    ctx.fillStyle = '#f1c40f';
+    ctx.arc(0, 0, innerRadius - 15, 0, Math.PI * 2);
+    ctx.fillStyle = '#f4d03f';
     ctx.fill();
 
-    // Seal center
+    // Círculo interno brilhante
     ctx.beginPath();
-    ctx.arc(sealX, sealY, sealRadius - 25, 0, Math.PI * 2);
-    ctx.fillStyle = '#d4af37';
+    ctx.arc(0, 0, innerRadius - 25, 0, Math.PI * 2);
+    const centerGradient = ctx.createRadialGradient(0, 0, 0, 0, 0, innerRadius - 25);
+    centerGradient.addColorStop(0, '#ffd700');
+    centerGradient.addColorStop(1, '#d4af37');
+    ctx.fillStyle = centerGradient;
     ctx.fill();
 
-    // Ribbon
-    ctx.fillStyle = '#d4af37';
-    ctx.fillRect(sealX - 15, sealY + 40, 30, 80);
-    // Ribbon tail
-    ctx.beginPath();
-    ctx.moveTo(sealX - 15, sealY + 120);
-    ctx.lineTo(sealX, sealY + 140);
-    ctx.lineTo(sealX + 15, sealY + 120);
-    ctx.fill();
+    ctx.restore();
 
-    // Title "CERTIFICADO"
-    ctx.fillStyle = '#d4af37';
-    ctx.font = 'bold 64px serif';
+    // Title "CERTIFICADO" com styling no estilo das imagens - mais próximo do topo
+    const titleGradient = ctx.createLinearGradient(0, 200, 0, 240);
+    titleGradient.addColorStop(0, '#d4af37');
+    titleGradient.addColorStop(1, '#b8860b');
+    
+    ctx.fillStyle = titleGradient;
+    ctx.font = 'bold 72px serif';
     ctx.textAlign = 'center';
-    ctx.fillText('CERTIFICADO', canvas.width / 2, 140);
+    ctx.fillText('CERTIFICADO', canvas.width / 2, 220);
 
-    // Subtitle
-    ctx.fillStyle = isDarkTheme ? '#e5e7eb' : '#2c3e50';
+    // Subtitle "DE PARTICIPAÇÃO"
+    ctx.fillStyle = isDarkTheme ? '#e2e8f0' : '#374151';
     ctx.font = 'bold 32px serif';
-    ctx.fillText('DE PARTICIPAÇÃO', canvas.width / 2, 180);
+    ctx.fillText('DE PARTICIPAÇÃO', canvas.width / 2, 260);
 
-    // Main text
-    ctx.fillStyle = isDarkTheme ? '#d1d5db' : '#34495e';
-    ctx.font = '24px serif';
-    ctx.fillText('Este certificado é orgulhosamente apresentado a:', canvas.width / 2, 240);
-
-    // User name
-    const userName = user?.user_metadata?.full_name || user?.email || 'Participante';
-    ctx.fillStyle = '#d4af37';
-    ctx.font = 'italic bold 48px serif';
-    ctx.fillText(userName, canvas.width / 2, 300);
-
-    // Underline for name
+    // Linhas decorativas embaixo do subtítulo
     ctx.strokeStyle = '#d4af37';
     ctx.lineWidth = 2;
-    const nameWidth = ctx.measureText(userName).width;
     ctx.beginPath();
-    ctx.moveTo((canvas.width - nameWidth) / 2, 310);
-    ctx.lineTo((canvas.width + nameWidth) / 2, 310);
+    ctx.moveTo(canvas.width / 2 - 150, 275);
+    ctx.lineTo(canvas.width / 2 + 150, 275);
     ctx.stroke();
 
-    // Event details
-    ctx.fillStyle = isDarkTheme ? '#e5e7eb' : '#2c3e50';
-    ctx.font = '20px serif';
+    // Main text
+    ctx.fillStyle = isDarkTheme ? '#d1d5db' : '#4b5563';
+    ctx.font = '24px serif';
+    ctx.fillText('Este certificado é orgulhosamente apresentado a:', canvas.width / 2, 320);
+
+    // User name com efeito especial - dourado
+    const userName = user?.user_metadata?.full_name || user?.email || 'Participante';
+    
+    const nameGradient = ctx.createLinearGradient(0, 350, 0, 390);
+    nameGradient.addColorStop(0, '#d4af37');
+    nameGradient.addColorStop(1, '#b8860b');
+    
+    ctx.fillStyle = nameGradient;
+    ctx.font = 'italic bold 48px serif';
+    ctx.fillText(userName, canvas.width / 2, 380);
+
+    // Linha decorativa embaixo do nome
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 3;
+    const nameWidth = ctx.measureText(userName).width;
+    
+    ctx.beginPath();
+    ctx.moveTo((canvas.width - nameWidth) / 2, 395);
+    ctx.lineTo((canvas.width + nameWidth) / 2, 395);
+    ctx.stroke();
+
+    // Event details com melhor formatação
+    ctx.fillStyle = isDarkTheme ? '#d1d5db' : '#4b5563';
+    ctx.font = '22px serif';
     ctx.textAlign = 'center';
 
     const eventDate = format(new Date(event.date_time), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
-    const workloadText = event.workload ? `${event.workload} horas` : '4 horas';
-    const speakerText = event.speaker ? event.speaker : 'wagner';
+    const workloadText = event.workload ? `${event.workload} horas` : '2 horas';
 
+    // Texto do certificado
     const line1 = `que participou do evento "${event.title}", realizado no dia`;
     const line2 = `${eventDate}, em ${event.location}.`;
-    const line3 = `A atividade foi promovida pelo projeto ORX Valley, do tipo ${event.type},`;
-    const line4 = `com carga horária de ${workloadText}, ministrada por ${speakerText}.`;
+    const line3 = `A atividade foi promovida pela Comunidade de Tecnologia ORX Valley, do tipo ${event.type},`;
+    const line4 = `com carga horária de ${workloadText}, ministrada pelo Time ORX Valley.`;
     const line5 = `Certificado emitido em ${format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`;
 
-    ctx.fillText(line1, canvas.width / 2, 360);
-    ctx.fillText(line2, canvas.width / 2, 390);
+    let currentY = 440; // Subido bastante para dar mais espaço
+    const lineHeight = 30;
+    
+    ctx.fillText(line1, canvas.width / 2, currentY);
+    currentY += lineHeight;
+    ctx.fillText(line2, canvas.width / 2, currentY);
+    currentY += lineHeight + 10;
 
     // Break long lines into multiple lines if needed
     const maxWidth = canvas.width - 200;
-    let lineY = 430;
 
     // Line 3
     const words3 = line3.split(' ');
@@ -316,16 +411,16 @@ const CertificateGenerator = () => {
       const testLine = currentLine3 + word + ' ';
       const metrics = ctx.measureText(testLine);
       if (metrics.width > maxWidth && currentLine3 !== '') {
-        ctx.fillText(currentLine3.trim(), canvas.width / 2, lineY);
+        ctx.fillText(currentLine3.trim(), canvas.width / 2, currentY);
         currentLine3 = word + ' ';
-        lineY += 30;
+        currentY += lineHeight;
       } else {
         currentLine3 = testLine;
       }
     }
     if (currentLine3.trim() !== '') {
-      ctx.fillText(currentLine3.trim(), canvas.width / 2, lineY);
-      lineY += 30;
+      ctx.fillText(currentLine3.trim(), canvas.width / 2, currentY);
+      currentY += lineHeight;
     }
 
     // Line 4
@@ -335,45 +430,101 @@ const CertificateGenerator = () => {
       const testLine = currentLine4 + word + ' ';
       const metrics = ctx.measureText(testLine);
       if (metrics.width > maxWidth && currentLine4 !== '') {
-        ctx.fillText(currentLine4.trim(), canvas.width / 2, lineY);
+        ctx.fillText(currentLine4.trim(), canvas.width / 2, currentY);
         currentLine4 = word + ' ';
-        lineY += 30;
+        currentY += lineHeight;
       } else {
         currentLine4 = testLine;
       }
     }
     if (currentLine4.trim() !== '') {
-      ctx.fillText(currentLine4.trim(), canvas.width / 2, lineY);
-      lineY += 30;
+      ctx.fillText(currentLine4.trim(), canvas.width / 2, currentY);
+      currentY += lineHeight + 15;
     }
 
-    ctx.fillText(line5, canvas.width / 2, lineY + 20);
+    // Data de emissão
+    ctx.font = 'italic 20px serif';
+    ctx.fillStyle = isDarkTheme ? '#9ca3af' : '#6b7280';
+    ctx.fillText(line5, canvas.width / 2, currentY);
 
-    // Signatures
-    const sigY = canvas.height - 120;
-    ctx.fillStyle = isDarkTheme ? '#d1d5db' : '#2c3e50';
-    ctx.font = 'italic 28px serif';
+    // Assinatura única centralizada - estilo das imagens de referência
+    const sigY = canvas.height - 100; // Subido um pouco mais
+    
+    // Linha da assinatura com ornamentos - dourado
+    ctx.strokeStyle = '#d4af37';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.moveTo(canvas.width / 2 - 120, sigY);
+    ctx.lineTo(canvas.width / 2 + 120, sigY);
+    ctx.stroke();
+    
+    // Se temos uma imagem de assinatura, desenhar ela SOBRE a linha
+    if (signatureImg) {
+      const sigWidth = 200;
+      const sigHeight = (signatureImg.height / signatureImg.width) * sigWidth;
+      const sigX = canvas.width / 2 - sigWidth / 2;
+      const sigImageY = sigY - sigHeight + 15; // Posiciona sobre a linha
+      
+      // Desenhar a imagem da assinatura
+      if (isDarkTheme) {
+        // No modo escuro, aplicar efeito dourado sutil
+        ctx.save();
+        ctx.globalCompositeOperation = 'screen';
+        ctx.drawImage(signatureImg, sigX, sigImageY, sigWidth, sigHeight);
+        ctx.restore();
+        
+        ctx.globalAlpha = 0.8;
+        ctx.drawImage(signatureImg, sigX, sigImageY, sigWidth, sigHeight);
+        ctx.globalAlpha = 1;
+      } else {
+        // No modo claro, desenhar normalmente
+        ctx.drawImage(signatureImg, sigX, sigImageY, sigWidth, sigHeight);
+      }
+    }
+    
+    // Nome da organização - TEXTO DOURADO NO MODO ESCURO
+    if (isDarkTheme) {
+      // Criar gradiente dourado para o texto no modo escuro
+      const orgGradient = ctx.createLinearGradient(0, sigY + 20, 0, sigY + 40);
+      orgGradient.addColorStop(0, '#fbbf24');
+      orgGradient.addColorStop(1, '#f59e0b');
+      ctx.fillStyle = orgGradient;
+    } else {
+      ctx.fillStyle = '#2c3e50';
+    }
+    ctx.font = 'bold 22px serif';
     ctx.textAlign = 'center';
-    ctx.fillText('_________________', canvas.width / 2 - 200, sigY);
-    ctx.font = 'bold 18px serif';
-    ctx.fillText('ORX Valley', canvas.width / 2 - 200, sigY + 25);
-    ctx.font = '16px serif';
-    ctx.fillText('Organização', canvas.width / 2 - 200, sigY + 45);
-
-    ctx.font = 'italic 28px serif';
-    ctx.fillText('_________________', canvas.width / 2 + 200, sigY);
-    ctx.font = 'bold 18px serif';
-    const signatoryName = event.speaker ? event.speaker : 'Organizador';
-    ctx.fillText(signatoryName, canvas.width / 2 + 200, sigY + 25);
-    ctx.font = '16px serif';
-    ctx.fillText('Responsável', canvas.width / 2 + 200, sigY + 45);
-
-    if (download) {
-      const link = document.createElement('a');
-      link.download = `certificado-${userName.replace(/\s+/g, '-').toLowerCase()}-${event.title.replace(/\s+/g, '-').toLowerCase()}.png`;
-      link.href = canvas.toDataURL('image/png', 1.0);
-      link.click();
+    ctx.fillText('ORX Valley', canvas.width / 2, sigY + 30);
+    
+    // Título da organização - TEXTO DOURADO NO MODO ESCURO
+    ctx.font = '18px serif';
+    if (isDarkTheme) {
+      // Usar um tom dourado mais suave para o subtítulo
+      ctx.fillStyle = '#d4af37';
+    } else {
+      ctx.fillStyle = '#6b7280';
     }
+    ctx.fillText('Organização', canvas.width / 2, sigY + 50);
+
+      if (download) {
+        const link = document.createElement('a');
+        link.download = `certificado-${userName.replace(/\s+/g, '-').toLowerCase()}-${event.title.replace(/\s+/g, '-').toLowerCase()}.png`;
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      }
+    };
+
+    // Carregar a imagem de assinatura
+    const signatureImg = new Image();
+    signatureImg.onload = () => {
+      drawCertificate(signatureImg);
+    };
+    signatureImg.onerror = () => {
+      // Se a imagem não carregar, desenhar sem ela
+      console.warn('Não foi possível carregar a assinatura. Usando fallback.');
+      drawCertificate();
+    };
+    signatureImg.src = '/assinatura.svg';
   };
 
   // Função principal que usa o canvas do modal
@@ -519,18 +670,16 @@ const CertificateGenerator = () => {
                       </div>
                       <div className="flex items-center text-gray-400 text-sm">
                         <Clock className="w-4 h-4 mr-2" />
-                        Carga horária: {event.workload ? `${event.workload} horas` : '4 horas'}
+                        Carga horária: {event.workload ? `${event.workload} horas` : '2 horas'}
                       </div>
                       <div className="flex items-center text-gray-400 text-sm">
                         <MapPin className="w-4 h-4 mr-2" />
                         {event.location}
                       </div>
-                      {event.speaker && (
-                        <div className="flex items-center text-gray-400 text-sm">
-                          <User className="w-4 h-4 mr-2" />
-                          {event.speaker}
-                        </div>
-                      )}
+                      <div className="flex items-center text-gray-400 text-sm">
+                        <User className="w-4 h-4 mr-2" />
+                        Time ORX Valley
+                      </div>
                     </div>
 
                     {/* Botões */}
@@ -641,11 +790,11 @@ const CertificateGenerator = () => {
                 </div>
                 <div>
                   <strong className="text-white">Carga Horária:</strong><br />
-                  <span className="text-gray-300">{selectedEvent.workload ? `${selectedEvent.workload} horas` : '4 horas'}</span>
+                  <span className="text-gray-300">{selectedEvent.workload ? `${selectedEvent.workload} horas` : '2 horas'}</span>
                 </div>
                 <div>
-                  <strong className="text-white">Palestrante:</strong><br />
-                  <span className="text-gray-300">{selectedEvent.speaker || 'Não informado'}</span>
+                  <strong className="text-white">Ministrado por:</strong><br />
+                  <span className="text-gray-300">Time ORX Valley</span>
                 </div>
                 <div>
                   <strong className="text-white">Tipo:</strong><br />

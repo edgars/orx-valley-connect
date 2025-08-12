@@ -1,4 +1,4 @@
-import { Instagram, Linkedin, MessageCircle } from 'lucide-react';
+import { Instagram, Linkedin, MessageCircle, HelpCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -33,10 +33,11 @@ const Footer = () => {
               <li><Link to="/manifesto" className="hover:text-white transition-colors">Manifesto</Link></li>
               <li><Link to="/meus-eventos" className="hover:text-white transition-colors">Eventos</Link></li>
               <li><Link to="/sobre" className="hover:text-white transition-colors">Sobre</Link></li>
+              {/* <li><Link to="/support" className="hover:text-white transition-colors">Suporte</Link></li> */}
             </ul>
           </div>
           
-          {/* Redes sociais */}
+          {/* Redes sociais e contato */}
           <div>
             <h4 className="font-semibold mb-4">Conecte-se Conosco</h4>
             <div className="space-y-3">
@@ -69,6 +70,14 @@ const Footer = () => {
                 <Instagram className="w-5 h-5 group-hover:text-[#E4405F]" />
                 <span>Instagram</span>
               </a>
+
+            {/*   <Link 
+                to="/support"
+                className="flex items-center gap-3 text-sm text-gray-400 hover:text-white transition-colors group"
+              >
+                <HelpCircle className="w-5 h-5 group-hover:text-[#10B981]" />
+                <span>Central de Suporte</span>
+              </Link> */}
             </div>
             
             <div className="mt-6 pt-4 border-t border-gray-700">
@@ -87,6 +96,9 @@ const Footer = () => {
             </Link>
             <Link to="/termos" className="hover:text-white transition-colors">
               Termos de Uso
+            </Link>
+            <Link to="/support" className="hover:text-white transition-colors">
+              Suporte
             </Link>
           </div>
         </div>

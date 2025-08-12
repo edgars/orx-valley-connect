@@ -37,7 +37,7 @@ const Members = () => {
           <p className="text-muted-foreground mb-6">
             Conecte-se com outros membros da ORX Valley e expanda sua rede de contatos.
           </p>
-          <div className="relative max-w-md">
+          <div className="relative w-1/2"> {/* MUDANÇA AQUI: de max-w-md para w-1/2 */}
             <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar membros..."
