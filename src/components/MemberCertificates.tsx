@@ -378,7 +378,7 @@ const CertificateGenerator = () => {
     ctx.lineTo((canvas.width + nameWidth) / 2, 395);
     ctx.stroke();
 
-    // Event details com melhor formatação
+    // Event details com melhor formatação e quebra automática de texto
     ctx.fillStyle = isDarkTheme ? '#d1d5db' : '#4b5563';
     ctx.font = '22px serif';
     ctx.textAlign = 'center';
@@ -386,60 +386,55 @@ const CertificateGenerator = () => {
     const eventDate = format(new Date(event.date_time), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const workloadText = event.workload ? `${event.workload} horas` : '2 horas';
 
-    // Texto do certificado
+    // Função para quebrar texto em múltiplas linhas
+    const wrapText = (text: string, maxWidth: number) => {
+      const words = text.split(' ');
+      const lines: string[] = [];
+      let currentLine = '';
+
+      for (const word of words) {
+        const testLine = currentLine + (currentLine ? ' ' : '') + word;
+        const metrics = ctx.measureText(testLine);
+        
+        if (metrics.width > maxWidth && currentLine !== '') {
+          lines.push(currentLine);
+          currentLine = word;
+        } else {
+          currentLine = testLine;
+        }
+      }
+      
+      if (currentLine) {
+        lines.push(currentLine);
+      }
+      
+      return lines;
+    };
+
+    let currentY = 440; // Subido bastante para dar mais espaço
+    const lineHeight = 30;
+    const maxWidth = canvas.width - 300; // Margem de segurança maior
+
+    // Texto do certificado com quebra automática
     const line1 = `que participou do evento "${event.title}", realizado no dia`;
     const line2 = `${eventDate}, em ${event.location}.`;
     const line3 = `A atividade foi promovida pela Comunidade de Tecnologia ORX Valley, do tipo ${event.type},`;
     const line4 = `com carga horária de ${workloadText}, ministrada pelo Time ORX Valley.`;
     const line5 = `Certificado emitido em ${format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}.`;
 
-    let currentY = 440; // Subido bastante para dar mais espaço
-    const lineHeight = 30;
+    // Processar cada linha com quebra automática
+    const lines = [line1, line2, line3, line4];
     
-    ctx.fillText(line1, canvas.width / 2, currentY);
-    currentY += lineHeight;
-    ctx.fillText(line2, canvas.width / 2, currentY);
-    currentY += lineHeight + 10;
-
-    // Break long lines into multiple lines if needed
-    const maxWidth = canvas.width - 200;
-
-    // Line 3
-    const words3 = line3.split(' ');
-    let currentLine3 = '';
-    for (let word of words3) {
-      const testLine = currentLine3 + word + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine3 !== '') {
-        ctx.fillText(currentLine3.trim(), canvas.width / 2, currentY);
-        currentLine3 = word + ' ';
+    for (const line of lines) {
+      const wrappedLines = wrapText(line, maxWidth);
+      for (const wrappedLine of wrappedLines) {
+        ctx.fillText(wrappedLine, canvas.width / 2, currentY);
         currentY += lineHeight;
-      } else {
-        currentLine3 = testLine;
       }
-    }
-    if (currentLine3.trim() !== '') {
-      ctx.fillText(currentLine3.trim(), canvas.width / 2, currentY);
-      currentY += lineHeight;
-    }
-
-    // Line 4
-    const words4 = line4.split(' ');
-    let currentLine4 = '';
-    for (let word of words4) {
-      const testLine = currentLine4 + word + ' ';
-      const metrics = ctx.measureText(testLine);
-      if (metrics.width > maxWidth && currentLine4 !== '') {
-        ctx.fillText(currentLine4.trim(), canvas.width / 2, currentY);
-        currentLine4 = word + ' ';
-        currentY += lineHeight;
-      } else {
-        currentLine4 = testLine;
+      // Espaço extra entre parágrafos
+      if (lines.indexOf(line) === 1) {
+        currentY += 10;
       }
-    }
-    if (currentLine4.trim() !== '') {
-      ctx.fillText(currentLine4.trim(), canvas.width / 2, currentY);
-      currentY += lineHeight + 15;
     }
 
     // Data de emissão
